@@ -75,7 +75,9 @@
         reportPointsArray = new Array();
         for (var i=0; i<report.points.length; i++)
             addToReportPointsArray(report.points[i].pointId, report.points[i].colour,
-                    report.points[i].consolidatedChart);
+                    report.points[i].consolidatedChart, report.points[i].plotType || 0, report.points[i].title || "",
+                    report.points[i].xAxisLabel || "", report.points[i].yAxisLabel || "", report.points[i].yReference || 0,
+                    report.points[i].useYReference || false);
         $set("includeEvents", report.includeEvents);
         $set("includeUserComments", report.includeUserComments);
         $set("dateRangeType", report.dateRangeType);
@@ -120,11 +122,11 @@
     
     function addPointToReport() {
         var pointId = $get("allPointsList");
-        addToReportPointsArray(pointId, "", true);
+        addToReportPointsArray(pointId, "", true, 0, "", "", "", 0, false);
         writeReportPointsArray();
     }
     
-    function addToReportPointsArray(pointId, colour, consolidatedChart) {
+    function addToReportPointsArray(pointId, colour, consolidatedChart, plotType, title, xAxisLabel, yAxisLabel, yReference, useYReference) {
         var data = getPointData(pointId);
         if (data) {
             // Missing names imply that the point was deleted, so ignore.
@@ -133,7 +135,13 @@
                 pointName : data.name,
                 pointType : data.dataTypeMessage,
                 colour : !colour ? (!data.chartColour ? "" : data.chartColour) : colour,
-                consolidatedChart : consolidatedChart
+                consolidatedChart : consolidatedChart,
+                plotType : plotType,
+                title : !title ? (!data.title ? "" : data.title) : title,
+                xAxisLabel : !xAxisLabel ? (!data.xAxisLabel ? "" : data.xAxisLabel) : xAxisLabel,
+                yAxisLabel : !yAxisLabel ? (!data.yAxisLabel ? "" : data.yAxisLabel) : yAxisLabel,
+                yReference : !yReference ? (!data.yReference ? "" : data.yReference) : yReference,
+                useYReference : useYReference
             };
         }
     }
@@ -199,6 +207,38 @@
         var item = getElement(reportPointsArray, pointId, "pointId");
         if (item)
             item["consolidatedChart"] = consolidatedChart;
+    }
+
+    function updatePointTitle(pointId, title) {
+        var item = getElement(reportPointsArray, pointId, "pointId");
+        if (item)
+            item["title"] = title;
+    }
+
+    function updatePointXAxisLabel(pointId, xAxisLabel) {
+        var item = getElement(reportPointsArray, pointId, "pointId");
+        if (item)
+            item["xAxisLabel"] = xAxisLabel;
+    }
+
+    function updatePointYAxisLabel(pointId, yAxisLabel) {
+        var item = getElement(reportPointsArray, pointId, "pointId");
+        if (item)
+            item["yAxisLabel"] = yAxisLabel;
+    }
+
+    function updatePointYReference(pointId, yReference) {
+        var item = getElement(reportPointsArray, pointId, "pointId");
+        if ((item) && (yReference.length > 0) && (parseFloat(yReference) == yReference)) {
+          item["yReference"] = yReference;
+          item["useYReference"] = true;
+        } else {
+          item["yReference"] = 0;
+          item["useYReference"] = false;
+        }
+        if ((parseFloat(yReference) == yReference)) {
+          
+        }
     }
     
     function updatePointsList() {
@@ -449,6 +489,10 @@
         showMessage("runDelayMinutesError");
         showMessage("scheduleCronError");
         showMessage("recipientsError");
+        showMessage("titleError");
+        showMessage("xAxisError");
+        showMessage("yAxisError");
+        showMessage("yRefError");
     }
     
     function showMessages(messages) {
@@ -592,12 +636,20 @@
                       <td><fmt:message key="reports.dataType"/></td>
                       <td><fmt:message key="reports.colour"/></td>
                       <td><fmt:message key="reports.consolidatedChart"/></td>
+                      <td><fmt:message key="reports.title"/></td>
+                      <td><fmt:message key="reports.xaxis"/></td>
+                      <td><fmt:message key="reports.yaxis"/></td>
+                      <td><fmt:message key="reports.yref"/></td>
                       <td></td>
                     </tr>
                   </tbody>
                   <tbody id="reportPointsTable"></tbody>
                 </table>
                 <span id="pointsError" class="formError"></span>
+                <span id="titleError" class="formError"></span>
+                <span id="xAxisError" class="formError"></span>
+                <span id="yAxisError" class="formError"></span>
+                <span id="yRefError" class="formError"></span>
               </td>
             </tr>
             

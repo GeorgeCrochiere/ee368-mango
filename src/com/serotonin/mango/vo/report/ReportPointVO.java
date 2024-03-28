@@ -11,6 +11,12 @@ public class ReportPointVO implements Serializable {
     private int pointId;
     private String colour;
     private boolean consolidatedChart;
+    private int plotType; // 0 = linear, 1 = Scatter
+    private String title;
+    private String xAxisLabel;
+    private String yAxisLabel;
+    private double yReference;
+    private boolean useYReference;
 
     public int getPointId() {
         return pointId;
@@ -36,6 +42,54 @@ public class ReportPointVO implements Serializable {
         this.consolidatedChart = consolidatedChart;
     }
 
+    public boolean isLinePlotType() {
+        return this.plotType;
+    }
+
+    public void setPlotType(int plotType) {
+        this.plotType = plotType;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getXAxisLabel() {
+        return this.xAxisLabel;
+    }
+
+    public void setXAxisLabel(String xAxis) {
+        this.xAxisLabel = xAxis;
+    }
+
+    public String getYAxisLabel() {
+        return this.yAxisLabel;
+    }
+
+    public void setYAxisLabel(String yAxis) {
+        this.yAxisLabel = yAxis;
+    }
+
+    public double getYReference() {
+        return this.yReference;
+    }
+
+    public void setYReference(double yReference) {
+        this.yReference = yReference;
+    }
+
+    public boolean getUseYReference() {
+        return useYReference;
+    }
+
+    public void setUseYReference(boolean useYReference) {
+        this.useYReference = useYReference;
+    }
+
     //
     //
     // Serialization
@@ -54,16 +108,28 @@ public class ReportPointVO implements Serializable {
     private void readObject(ObjectInputStream in) throws IOException {
         int ver = in.readInt();
 
-        // Switch on the version of the class so that version changes can be elegantly handled.
+        // Switch on the version of the class so that version changes can be elegantly
+        // handled.
         if (ver == 1) {
             pointId = in.readInt();
             colour = SerializationHelper.readSafeUTF(in);
             consolidatedChart = true;
-        }
-        else if (ver == 2) {
+            title = SerializationHelper.readSafeUTF(in);
+            xAxisLabel = SerializationHelper.readSafeUTF(in);
+            yAxisLabel = SerializationHelper.readSafeUTF(in);
+            yReference = in.readDouble();
+            useYReference = true;
+
+        } else if (ver == 2) {
             pointId = in.readInt();
             colour = SerializationHelper.readSafeUTF(in);
             consolidatedChart = in.readBoolean();
+            title = SerializationHelper.readSafeUTF(in);
+            xAxisLabel = SerializationHelper.readSafeUTF(in);
+            yAxisLabel = SerializationHelper.readSafeUTF(in);
+            yReference = in.readDouble();
+            useYReference = in.readBoolean();
+
         }
     }
 }
