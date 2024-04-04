@@ -109,7 +109,8 @@ public class ReportDao extends BaseDao {
         ejt.update(
                 REPORT_UPDATE,
                 new Object[] { report.getUserId(), report.getName(), SerializationHelper.writeObject(report),
-                        report.getId() }, new int[] { Types.INTEGER, Types.VARCHAR, Types.BLOB, Types.INTEGER });
+                        report.getId() },
+                new int[] { Types.INTEGER, Types.VARCHAR, Types.BLOB, Types.INTEGER });
     }
 
     public void deleteReport(int reportId) {
@@ -195,18 +196,31 @@ public class ReportDao extends BaseDao {
      * This method should only be called by the ReportWorkItem.
      */
     private static final String REPORT_INSTANCE_POINTS_INSERT = "insert into reportInstancePoints " //
-            + "(reportInstanceId, dataSourceName, pointName, dataType, startValue, textRenderer, colour, consolidatedChart) "
-            + "values (?,?,?,?,?,?,?,?)";
+            + "(reportInstanceId, dataSourceName, pointName, dataType, startValue, textRenderer, colour, consolidatedChart, plotType, title, xAxisLabel, yAxisLabel, useYRef, yRefVal) "
+            + "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
     public static class PointInfo {
         private final DataPointVO point;
         private final String colour;
         private final boolean consolidatedChart;
+        private final int plotType;
+        private final String title;
+        private final String xAxisLabel;
+        private final String yAxisLabel;
+        private final boolean useYRef;
+        private final double yRef;
 
-        public PointInfo(DataPointVO point, String colour, boolean consolidatedChart) {
+        public PointInfo(DataPointVO point, String colour, boolean consolidatedChart, int plotType, String title,
+                String xAxisLabel, String yAxisLabel, boolean useYRef, double yRef) {
             this.point = point;
             this.colour = colour;
             this.consolidatedChart = consolidatedChart;
+            this.plotType = plotType;
+            this.title = title;
+            this.xAxisLabel = xAxisLabel;
+            this.yAxisLabel = yAxisLabel;
+            this.useYRef = useYRef;
+            this.yRef = yRef;
         }
 
         public DataPointVO getPoint() {
@@ -220,6 +234,31 @@ public class ReportDao extends BaseDao {
         public boolean isConsolidatedChart() {
             return consolidatedChart;
         }
+
+        public int getPlotType() {
+            return this.plotType;
+        }
+
+        public String getTitle() {
+            return this.title;
+        }
+
+        public String getXAxisLabel() {
+            return this.xAxisLabel;
+        }
+
+        public String getYAxisLabel() {
+            return this.yAxisLabel;
+        }
+
+        public boolean isUseYRef() {
+            return this.useYRef;
+        }
+
+        public double getYRefVal() {
+            return this.yRef;
+        }
+
     }
 
     public int runReport(final ReportInstance instance, List<PointInfo> points, ResourceBundle bundle) {
@@ -236,16 +275,13 @@ public class ReportDao extends BaseDao {
         if (instance.isFromInception() && instance.isToNow()) {
             timestampSql = "";
             timestampParams = new Object[0];
-        }
-        else if (instance.isFromInception()) {
+        } else if (instance.isFromInception()) {
             timestampSql = "and ${field}<?";
             timestampParams = new Object[] { instance.getReportEndTime() };
-        }
-        else if (instance.isToNow()) {
+        } else if (instance.isToNow()) {
             timestampSql = "and ${field}>=?";
             timestampParams = new Object[] { instance.getReportStartTime() };
-        }
-        else {
+        } else {
             timestampSql = "and ${field}>=? and ${field}<?";
             timestampParams = new Object[] { instance.getReportStartTime(), instance.getReportEndTime() };
         }
@@ -275,7 +311,8 @@ public class ReportDao extends BaseDao {
                     new Object[] { instance.getId(), point.getDeviceName(), name, dataType,
                             DataTypes.valueToString(startValue),
                             SerializationHelper.writeObject(point.getTextRenderer()), pointInfo.getColour(),
-                            boolToChar(pointInfo.isConsolidatedChart()) }, new int[] { Types.INTEGER, Types.VARCHAR,
+                            boolToChar(pointInfo.isConsolidatedChart()) },
+                    new int[] { Types.INTEGER, Types.VARCHAR,
                             Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB, Types.VARCHAR, Types.CHAR });
 
             // Insert the reportInstanceData records
@@ -373,13 +410,15 @@ public class ReportDao extends BaseDao {
             ejt.update(commentSQL, new Object[] { instance.getId() });
         }
 
-        // If the report had undefined start or end times, update them with values from the data.
+        // If the report had undefined start or end times, update them with values from
+        // the data.
         if (instance.isFromInception() || instance.isToNow()) {
             ejt.query(
                     "select min(rd.ts), max(rd.ts) " //
                             + "from reportInstancePoints rp "
                             + "  join reportInstanceData rd on rp.id=rd.reportInstancePointId "
-                            + "where rp.reportInstanceId=?", new Object[] { instance.getId() },
+                            + "where rp.reportInstanceId=?",
+                    new Object[] { instance.getId() },
                     new RowCallbackHandler() {
                         public void processRow(ResultSet rs) throws SQLException {
                             if (instance.isFromInception())
@@ -406,11 +445,12 @@ public class ReportDao extends BaseDao {
     }
 
     /**
-     * This method guarantees that the data is provided to the setData handler method grouped by point (points are not
+     * This method guarantees that the data is provided to the setData handler
+     * method grouped by point (points are not
      * ordered), and sorted by time ascending.
      */
-    private static final String REPORT_INSTANCE_POINT_SELECT = "select id, dataSourceName, pointName, dataType, " // 
-            + "startValue, textRenderer, colour, consolidatedChart from reportInstancePoints ";
+    private static final String REPORT_INSTANCE_POINT_SELECT = "select id, dataSourceName, pointName, dataType, " //
+            + "startValue, textRenderer, colour, consolidatedChart, plotType, title, xAxisLabel, yAxisLabel, useYRef, yRefVal from reportInstancePoints ";
     private static final String REPORT_INSTANCE_DATA_SELECT = "select rd.pointValue, rda.textPointValueShort, " //
             + "  rda.textPointValueLong, rd.ts, rda.sourceValue "
             + "from reportInstanceData rd "
@@ -434,6 +474,14 @@ public class ReportDao extends BaseDao {
                                 .getBinaryStream()));
                         rp.setColour(rs.getString(7));
                         rp.setConsolidatedChart(charToBool(rs.getString(8)));
+                        // Get other components based from SQL query, 9 is PlotType, ...
+                        // plotType, title, xAxisLabel, yAxisLabel, useYRef, yRefVal
+                        rp.setPlotType(rs.getInt(9));
+                        rp.setTitle(rs.getString(10));
+                        rp.setXAxisLabel(rs.getString(11));
+                        rp.setYAxisLabel(rs.getString(12));
+                        rp.setUseYReference(charToBool(rs.getString(13)));
+                        rp.setYReference(rs.getDouble(14));
                         return rp;
                     }
                 });
@@ -448,25 +496,25 @@ public class ReportDao extends BaseDao {
                     new Object[] { point.getReportPointId() }, new RowCallbackHandler() {
                         public void processRow(ResultSet rs) throws SQLException {
                             switch (dataType) {
-                            case (DataTypes.NUMERIC):
-                                rdv.setValue(new NumericValue(rs.getDouble(1)));
-                                break;
-                            case (DataTypes.BINARY):
-                                rdv.setValue(new BinaryValue(rs.getDouble(1) == 1));
-                                break;
-                            case (DataTypes.MULTISTATE):
-                                rdv.setValue(new MultistateValue(rs.getInt(1)));
-                                break;
-                            case (DataTypes.ALPHANUMERIC):
-                                rdv.setValue(new AlphanumericValue(rs.getString(2)));
-                                if (rs.wasNull())
-                                    rdv.setValue(new AlphanumericValue(rs.getString(3)));
-                                break;
-                            case (DataTypes.IMAGE):
-                                rdv.setValue(new ImageValue(Integer.parseInt(rs.getString(2)), rs.getInt(1)));
-                                break;
-                            default:
-                                rdv.setValue(null);
+                                case (DataTypes.NUMERIC):
+                                    rdv.setValue(new NumericValue(rs.getDouble(1)));
+                                    break;
+                                case (DataTypes.BINARY):
+                                    rdv.setValue(new BinaryValue(rs.getDouble(1) == 1));
+                                    break;
+                                case (DataTypes.MULTISTATE):
+                                    rdv.setValue(new MultistateValue(rs.getInt(1)));
+                                    break;
+                                case (DataTypes.ALPHANUMERIC):
+                                    rdv.setValue(new AlphanumericValue(rs.getString(2)));
+                                    if (rs.wasNull())
+                                        rdv.setValue(new AlphanumericValue(rs.getString(3)));
+                                    break;
+                                case (DataTypes.IMAGE):
+                                    rdv.setValue(new ImageValue(Integer.parseInt(rs.getString(2)), rs.getInt(1)));
+                                    break;
+                                default:
+                                    rdv.setValue(null);
                             }
 
                             rdv.setTime(rs.getLong(4));
@@ -480,11 +528,11 @@ public class ReportDao extends BaseDao {
     }
 
     private static final String EVENT_SELECT = //
-    "select eventId, typeId, typeRef1, typeRef2, activeTs, rtnApplicable, rtnTs, rtnCause, alarmLevel, message, " //
-            + "ackTs, 0, ackUsername, alternateAckSource " //
-            + "from reportInstanceEvents " //
-            + "where reportInstanceId=? " //
-            + "order by activeTs";
+            "select eventId, typeId, typeRef1, typeRef2, activeTs, rtnApplicable, rtnTs, rtnCause, alarmLevel, message, " //
+                    + "ackTs, 0, ackUsername, alternateAckSource " //
+                    + "from reportInstanceEvents " //
+                    + "where reportInstanceId=? " //
+                    + "order by activeTs";
     private static final String EVENT_COMMENT_SELECT = "select username, typeKey, ts, commentText " //
             + "from reportInstanceUserComments " //
             + "where reportInstanceId=? and commentType=? " //

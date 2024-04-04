@@ -42,7 +42,7 @@ public class ReportPointVO implements Serializable {
         this.consolidatedChart = consolidatedChart;
     }
 
-    public boolean isLinePlotType() {
+    public int getPlotType() {
         return this.plotType;
     }
 

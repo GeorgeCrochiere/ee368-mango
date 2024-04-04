@@ -113,16 +113,52 @@ public class ReportWorkItem implements WorkItem {
         for (ReportPointVO reportPoint : reportConfig.getPoints()) {
             DataPointVO point = dataPointDao.getDataPoint(reportPoint.getPointId());
             if (point != null && Permissions.hasDataPointReadPermission(user, point)) {
+                // Colour
                 String colour = null;
                 try {
                     if (!StringUtils.isEmpty(reportPoint.getColour()))
                         colour = ColorUtils.toHexString(reportPoint.getColour()).substring(1);
-                }
-                catch (InvalidArgumentException e) {
-                    // Should never happen since the colour would have been validated on save, so just let it go 
+                } catch (InvalidArgumentException e) {
+                    // Should never happen since the colour would have been validated on save, so
+                    // just let it go
                     // as null.
                 }
-                points.add(new ReportDao.PointInfo(point, colour, reportPoint.isConsolidatedChart()));
+
+                // Title
+                String title = null;
+                try {
+                    if (!StringUtils.isEmpty(reportPoint.getTitle()))
+                        title = reportPoint.getTitle();
+                } catch (InvalidArgumentException e) {
+                    // N/A
+                }
+
+                // X Axis Label
+                String xAxisLabel = null;
+                try {
+                    if (StringUtils.isEmpty(reportPoint.getXAxisLabel()))
+                        xAxisLabel = reportPoint.getXAxisLabel();
+                } catch (InvalidArgumentException e) {
+                    // N/A
+                }
+
+                // Y Axis Label
+                String yAxisLabel = null;
+                try {
+                    if (StringUtils.isEmpty(reportPoint.getYAxisLabel()))
+                        yAxisLabel = reportPoint.getYAxisLabel();
+                } catch (InvalidArgumentException e) {
+                    // N/A
+                }
+
+                // Plot Type - Should always be 0 or 1, no other option possible
+                int plotType = reportPoint.getPlotType();
+
+                boolean useYRef = reportPoint.getUseYReference();
+                double yRefVal = reportPoint.getYReference();
+
+                points.add(new ReportDao.PointInfo(point, colour, reportPoint.isConsolidatedChart(), plotType, title,
+                        xAxisLabel, yAxisLabel, useYRef, yRefVal));
             }
         }
 
@@ -130,16 +166,13 @@ public class ReportWorkItem implements WorkItem {
         try {
             if (!points.isEmpty())
                 recordCount = reportDao.runReport(reportInstance, points, bundle);
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             recordCount = -1;
             throw e;
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             recordCount = -1;
             throw new RuntimeException("Report instance failed", e);
-        }
-        finally {
+        } finally {
             reportInstance.setRunEndTime(System.currentTimeMillis());
             reportInstance.setRecordCount(recordCount);
             reportDao.saveReportInstance(reportInstance);
@@ -170,8 +203,9 @@ public class ReportWorkItem implements WorkItem {
             for (PointStatistics pointStatistics : creator.getPointStatistics()) {
                 if (pointStatistics.getImageData() != null)
                     emailContent.addInline(new EmailInline.ByteArrayInline(inlinePrefix
-                            + pointStatistics.getChartName(), pointStatistics.getImageData(), ImageChartUtils
-                            .getContentType()));
+                            + pointStatistics.getChartName(), pointStatistics.getImageData(),
+                            ImageChartUtils
+                                    .getContentType()));
             }
 
             // Add optional images used by the template.
@@ -202,8 +236,7 @@ public class ReportWorkItem implements WorkItem {
             try {
                 LocalizableMessage lm = new LocalizableMessage("ftl.scheduledReport", reportConfig.getName());
                 EmailWorkItem.queueEmail(toAddrs, lm.getLocalizedMessage(bundle), emailContent, postEmail);
-            }
-            catch (AddressException e) {
+            } catch (AddressException e) {
                 LOG.error(e);
             }
 
@@ -237,12 +270,10 @@ public class ReportWorkItem implements WorkItem {
                     emailContent.addAttachment(new EmailAttachment.FileAttachment(name + ".zip", zipFile));
 
                     filesToDelete.add(zipFile);
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     LOG.error("Failed to create zip file", e);
                 }
-            }
-            else
+            } else
                 emailContent.addAttachment(new EmailAttachment.FileAttachment(name, file));
 
             filesToDelete.add(file);
