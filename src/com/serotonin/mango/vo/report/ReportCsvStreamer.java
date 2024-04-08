@@ -196,21 +196,14 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
             currLineCt = 0;
             out.write(csvWriter.encodeRow(pointData));
         }
-        
     }
 
-
     private void formatReps(){
+        int ptCt = 0;
+        while(ptCt < pointsList.size()){
 
-        ArrayList<ReportPointInfo> sortPt = new ArrayList<>();
-        ArrayList<ArrayList<ReportDataValue>> sortDat = new ArrayList<>();
-
-        int ptCt = pointsList.size();
-        while(sortPt.size() < ptCt){
-
-            
-            ReportPointInfo tempInf = pointsList.get(0);
-            int cntr = 1;
+            ReportPointInfo tempInf = pointsList.get(0 + ptCt);
+            int cntr = 1 + ptCt;
             while(cntr < pointsList.size()){
                 
                 if(pointsList.get(cntr).getExtendedName().compareTo(tempInf.getExtendedName()) < 0)
@@ -218,18 +211,11 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
                 cntr++;
             }
             
-            sortPt.add(tempInf);
+            pointsList.add(tempInf);
             pointsList.remove(cntr - 1);
-            sortDat.add(rdvLists.get(cntr - 1));
+            rdvLists.add(rdvLists.get(cntr - 1));
+            rdvLists.remove(cntr - 1);
+            ptCt++;
         }
-
-        // Overwrite old lists
-        pointsList = sortPt;
-        rdvLists = sortDat;
-
-        
-
-
-
     }
 }

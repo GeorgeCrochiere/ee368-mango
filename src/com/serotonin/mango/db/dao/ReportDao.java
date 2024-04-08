@@ -438,43 +438,41 @@ public class ReportDao extends BaseDao {
                     }
                 });
 
-        final ArrayList<ReportDataValue> rdvs = new ArrayList<>();
         final ReportDataValue rdv = new ReportDataValue();
         for (final ReportPointInfo point : pointInfos) {
-            rdvs.add(new ReportDataValue());
             handler.startPoint(point);
 
-            rdvs.get(rdvs.size() - 1).setReportPointId(point.getReportPointId());
+            rdv.setReportPointId(point.getReportPointId());
             final int dataType = point.getDataType();
             ejt.query(REPORT_INSTANCE_DATA_SELECT + "where rd.reportInstancePointId=? order by rd.ts",
                     new Object[] { point.getReportPointId() }, new RowCallbackHandler() {
                         public void processRow(ResultSet rs) throws SQLException {
                             switch (dataType) {
                             case (DataTypes.NUMERIC):
-                                rdvs.get(rdvs.size() - 1).setValue(new NumericValue(rs.getDouble(1)));
+                                rdv.setValue(new NumericValue(rs.getDouble(1)));
                                 break;
                             case (DataTypes.BINARY):
-                                rdvs.get(rdvs.size() - 1).setValue(new BinaryValue(rs.getDouble(1) == 1));
+                                rdv.setValue(new BinaryValue(rs.getDouble(1) == 1));
                                 break;
                             case (DataTypes.MULTISTATE):
-                                rdvs.get(rdvs.size() - 1).setValue(new MultistateValue(rs.getInt(1)));
+                                rdv.setValue(new MultistateValue(rs.getInt(1)));
                                 break;
                             case (DataTypes.ALPHANUMERIC):
-                                rdvs.get(rdvs.size() - 1).setValue(new AlphanumericValue(rs.getString(2)));
+                                rdv.setValue(new AlphanumericValue(rs.getString(2)));
                                 if (rs.wasNull())
                                     rdv.setValue(new AlphanumericValue(rs.getString(3)));
                                 break;
                             case (DataTypes.IMAGE):
-                                rdvs.get(rdvs.size() - 1).setValue(new ImageValue(Integer.parseInt(rs.getString(2)), rs.getInt(1)));
+                                rdv.setValue(new ImageValue(Integer.parseInt(rs.getString(2)), rs.getInt(1)));
                                 break;
                             default:
-                                rdvs.get(rdvs.size() - 1).setValue(null);
+                                rdv.setValue(null);
                             }
 
-                            rdvs.get(rdvs.size() - 1).setTime(rs.getLong(4));
-                            rdvs.get(rdvs.size() - 1).setAnnotation(rs.getString(5));
+                            rdv.setTime(rs.getLong(4));
+                            rdv.setAnnotation(rs.getString(5));
 
-                            handler.pointData(rdvs.get(rdvs.size() - 1));
+                            handler.pointData(rdv);
                         }
                     });
         }
