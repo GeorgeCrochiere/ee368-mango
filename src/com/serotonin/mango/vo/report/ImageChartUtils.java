@@ -32,13 +32,17 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYTextAnnotation;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.plot.Marker;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
 import org.jfree.data.general.SeriesException;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.ui.Layer;
 import org.jfree.ui.TextAnchor;
 
 import com.serotonin.ShouldNeverHappenException;
@@ -54,32 +58,52 @@ import com.serotonin.util.StringUtils;
 public class ImageChartUtils {
     private static final int NUMERIC_DATA_INDEX = 0;
     private static final int DISCRETE_DATA_INDEX = 1;
+    private static final int LINEAR_PLOT = 0;
+    private static final int SCATTER_PLOT = 1;
 
     public static void writeChart(PointTimeSeriesCollection pointTimeSeriesCollection, OutputStream out, int width,
-            int height) throws IOException {
-        writeChart(pointTimeSeriesCollection, pointTimeSeriesCollection.hasMultiplePoints(), out, width, height);
+            int height, int plotType, String title, String xAxisLabel, String yAxisLabel, boolean useYRef,
+            double yRefVal) throws IOException {
+        writeChart(pointTimeSeriesCollection, pointTimeSeriesCollection.hasMultiplePoints(), out, width, height,
+                plotType, title, xAxisLabel, yAxisLabel, useYRef, yRefVal);
     }
 
-    public static byte[] getChartData(PointTimeSeriesCollection pointTimeSeriesCollection, int width, int height) {
-        return getChartData(pointTimeSeriesCollection, pointTimeSeriesCollection.hasMultiplePoints(), width, height);
+    public static byte[] getChartData(PointTimeSeriesCollection pointTimeSeriesCollection, int width, int height,
+            int plotType, String title, String xAxisLabel, String yAxisLabel, boolean useYRef, double yRefVal) {
+        return getChartData(pointTimeSeriesCollection, pointTimeSeriesCollection.hasMultiplePoints(), width, height,
+                plotType, title, xAxisLabel, yAxisLabel, useYRef, yRefVal);
     }
 
     public static byte[] getChartData(PointTimeSeriesCollection pointTimeSeriesCollection, boolean showLegend,
-            int width, int height) {
+            int width, int height, int plotType, String title, String xAxisLabel, String yAxisLabel, boolean useYRef,
+            double yRefVal) {
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            writeChart(pointTimeSeriesCollection, showLegend, out, width, height);
+            writeChart(pointTimeSeriesCollection, showLegend, out, width, height, plotType, title, xAxisLabel,
+                    yAxisLabel, useYRef, yRefVal);
             return out.toByteArray();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new ShouldNeverHappenException(e);
         }
     }
 
     public static void writeChart(PointTimeSeriesCollection pointTimeSeriesCollection, boolean showLegend,
-            OutputStream out, int width, int height) throws IOException {
+            OutputStream out, int width, int height, int plotType, String title, String xAxisLabel, String yAxisLabel,
+            boolean useYRef, double yRefVal) throws IOException {
 
-        JFreeChart chart = ChartFactory.createTimeSeriesChart(null, null, null, null, showLegend, false, false);
+        // Get data values for strings
+        String titleVal = (title.length() > 0) ? title : null;
+        String xAxisVal = (xAxisLabel.length() > 0) ? xAxisLabel : null;
+        String yAxisVal = (yAxisLabel.length() > 0) ? yAxisLabel : null;
+
+        // Create chart type, Linear vs Scatter
+        JFreeChart chart;
+        if (plotType == LINEAR_PLOT) {
+            chart = ChartFactory.createTimeSeriesChart(titleVal, xAxisVal, yAxisVal, null, showLegend, false, false);
+        } else {
+            chart = ChartFactory.createScatterPlot(titleVal, xAxisVal, yAxisVal, null, PlotOrientation.HORIZONTAL,
+                    showLegend, false, false);
+        }
         chart.setBackgroundPaint(SystemSettingsDao.getColour(SystemSettingsDao.CHART_BACKGROUND_COLOUR));
 
         XYPlot plot = chart.getXYPlot();
@@ -88,11 +112,16 @@ public class ImageChartUtils {
         plot.setDomainGridlinePaint(gridlines);
         plot.setRangeGridlinePaint(gridlines);
 
+        // Add Y Reference
+        if (useYRef) {
+            plot.addRangeMarker(0, new ValueMarker(yRefVal), Layer.FOREGROUND);
+        }
+
         double numericMin = 0;
         double numericMax = 1;
         if (pointTimeSeriesCollection.hasNumericData()) {
-            //            XYSplineRenderer numericRenderer = new XYSplineRenderer();
-            //            numericRenderer.setBaseShapesVisible(false);
+            // XYSplineRenderer numericRenderer = new XYSplineRenderer();
+            // numericRenderer.setBaseShapesVisible(false);
             XYLineAndShapeRenderer numericRenderer = new XYLineAndShapeRenderer(true, false);
 
             plot.setDataset(NUMERIC_DATA_INDEX, pointTimeSeriesCollection.getNumericTimeSeriesCollection());
@@ -108,7 +137,8 @@ public class ImageChartUtils {
             numericMax = plot.getRangeAxis().getUpperBound();
 
             if (!pointTimeSeriesCollection.hasMultiplePoints()) {
-                // If this chart displays a single point, check if there should be a range description.
+                // If this chart displays a single point, check if there should be a range
+                // description.
                 TimeSeries timeSeries = pointTimeSeriesCollection.getNumericTimeSeriesCollection().getSeries(0);
                 String desc = timeSeries.getRangeDescription();
                 if (!StringUtils.isEmpty(desc)) {
@@ -117,8 +147,7 @@ public class ImageChartUtils {
                     plot.getRangeAxis().setLabel(desc);
                 }
             }
-        }
-        else
+        } else
             plot.getRangeAxis().setVisible(false);
 
         if (pointTimeSeriesCollection.hasDiscreteData()) {
@@ -174,22 +203,25 @@ public class ImageChartUtils {
         ChartUtilities.writeChartAsPNG(out, chart, width, height);
     }
 
-    // public static void writeChart(TimeSeries timeSeries, OutputStream out, int width, int height) throws IOException
+    // public static void writeChart(TimeSeries timeSeries, OutputStream out, int
+    // width, int height) throws IOException
     // {
     // writeChart(new TimeSeriesCollection(timeSeries), false, out, width, height);
     // }
-    //    
-    // public static void writeChart(TimeSeriesCollection timeSeriesCollection, boolean showLegend, OutputStream out,
+    //
+    // public static void writeChart(TimeSeriesCollection timeSeriesCollection,
+    // boolean showLegend, OutputStream out,
     // int width, int height) throws IOException {
-    // JFreeChart chart = ChartFactory.createTimeSeriesChart(null, null, null, timeSeriesCollection, showLegend,
+    // JFreeChart chart = ChartFactory.createTimeSeriesChart(null, null, null,
+    // timeSeriesCollection, showLegend,
     // false, false);
     // chart.setBackgroundPaint(Color.white);
-    //        
+    //
     // // Change the plot renderer
     // // XYPlot plot = chart.getXYPlot();
     // // XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
     // // plot.setRenderer(renderer);
-    //        
+    //
     // // Return the image.
     // ChartUtilities.writeChartAsPNG(out, chart, width, height);
     // }
@@ -206,8 +238,7 @@ public class ImageChartUtils {
     public static void addSecond(TimeSeries timeSeries, long time, Number value) {
         try {
             timeSeries.add(new Second(new Date(time)), value);
-        }
-        catch (SeriesException e) { /* duplicate Second. Ignore. */
+        } catch (SeriesException e) { /* duplicate Second. Ignore. */
         }
     }
 }

@@ -311,9 +311,13 @@ public class ReportDao extends BaseDao {
                     new Object[] { instance.getId(), point.getDeviceName(), name, dataType,
                             DataTypes.valueToString(startValue),
                             SerializationHelper.writeObject(point.getTextRenderer()), pointInfo.getColour(),
-                            boolToChar(pointInfo.isConsolidatedChart()) },
+                            boolToChar(pointInfo.isConsolidatedChart()), pointInfo.getPlotType(), pointInfo.getTitle(),
+                            pointInfo.getXAxisLabel(), pointInfo.getYAxisLabel(), boolToChar(pointInfo.isUseYRef()),
+                            pointInfo.getYRefVal() },
                     new int[] { Types.INTEGER, Types.VARCHAR,
-                            Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB, Types.VARCHAR, Types.CHAR });
+                            Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB, Types.VARCHAR, Types.CHAR,
+                            Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.DOUBLE
+                    });
 
             // Insert the reportInstanceData records
             String insertSQL = "insert into reportInstanceData " + "  select id, " + reportPointId
