@@ -20,6 +20,7 @@ package com.serotonin.mango.vo.report;
 
 import java.io.PrintWriter;
 import java.util.ResourceBundle;
+import java.util.ArrayList;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -40,41 +41,195 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
     private final String[] data = new String[5];
     private final DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss");
     private final CsvWriter csvWriter = new CsvWriter();
+    
+    private final ResourceBundle this_bundle;
+    private Boolean horizontal;
+    private String[] header;
+    private static final String CRLF = "\r\n";
 
-    public ReportCsvStreamer(PrintWriter out, ResourceBundle bundle) {
+    // Make array lists to store rdvs
+    private ArrayList<ArrayList<ReportDataValue>> rdvLists;
+    private ArrayList<ReportPointInfo> pointsList;
+
+    public ReportCsvStreamer(PrintWriter out, ResourceBundle bundle, Boolean writeHeader) {
         this.out = out;
+        this_bundle = bundle;
 
-        // Write the headers.
-        data[0] = I18NUtils.getMessage(bundle, "reports.pointName");
-        data[1] = I18NUtils.getMessage(bundle, "common.time");
-        data[2] = I18NUtils.getMessage(bundle, "common.value");
-        data[3] = I18NUtils.getMessage(bundle, "reports.rendered");
-        data[4] = I18NUtils.getMessage(bundle, "common.annotation");
-        out.write(csvWriter.encodeRow(data));
+        // CHANGED
+        if(writeHeader) {
+            this.horizontal = false;
+            // Write the header by default
+            data[0] = I18NUtils.getMessage(this_bundle, "reports.pointName");
+            data[1] = I18NUtils.getMessage(this_bundle, "common.time");
+            data[2] = I18NUtils.getMessage(this_bundle, "common.value");
+            data[3] = I18NUtils.getMessage(this_bundle, "reports.rendered");
+            data[4] = I18NUtils.getMessage(this_bundle, "common.annotation");
+            out.write(csvWriter.encodeRow(data));
+        }
+        else{
+            this.rdvLists = new ArrayList<>();
+            this.pointsList  = new ArrayList<>();
+            this.horizontal = true;
+        }
+        
     }
 
     public void startPoint(ReportPointInfo pointInfo) {
-        data[0] = pointInfo.getExtendedName();
-        textRenderer = pointInfo.getTextRenderer();
+
+        if(!horizontal){
+            data[0] = pointInfo.getExtendedName();
+            textRenderer = pointInfo.getTextRenderer();
+        }
+        else{
+            // Start new list for unique point
+            if(pointsList.isEmpty() || pointInfo.getExtendedName() != pointsList.get(pointsList.size() - 1).getExtendedName()){
+                pointsList.add(pointInfo);
+                rdvLists.add(new ArrayList<>());
+            }
+        }
     }
 
     public void pointData(ReportDataValue rdv) {
-        data[1] = dtf.print(new DateTime(rdv.getTime()));
 
-        if (rdv.getValue() == null)
-            data[2] = data[3] = null;
-        else {
-            data[2] = rdv.getValue().toString();
-            data[3] = textRenderer.getText(rdv.getValue(), TextRenderer.HINT_FULL);
+        if(!horizontal){
+            data[1] = dtf.print(new DateTime(rdv.getTime()));
+
+            if (rdv.getValue() == null)
+                data[2] = data[3] = null;
+            else {
+                data[2] = rdv.getValue().toString();
+                data[3] = textRenderer.getText(rdv.getValue(), TextRenderer.HINT_FULL);
+            }
+
+            data[4] = rdv.getAnnotation();
+
+            out.write(csvWriter.encodeRow(data));
         }
+        else
+            rdvLists.get(pointsList.size() - 1).add(rdv);        // Add the point data  to the rdv sub-list
+            
 
-        data[4] = rdv.getAnnotation();
-
-        out.write(csvWriter.encodeRow(data));
     }
 
     public void done() {
+        if(horizontal)
+            genReport();    // Don't forget to call the meat
+
         out.flush();
         out.close();
+    }
+
+    private void makeHeader(int pointCt){
+        this.header = new String[(pointCt * 5) + 1];
+
+        int ct = 0;
+        while(ct < (pointCt * 5)){
+            header[ct++] = I18NUtils.getMessage(this_bundle, "reports.pointName");
+            header[ct++] = I18NUtils.getMessage(this_bundle, "common.time");
+            header[ct++] = I18NUtils.getMessage(this_bundle, "common.value");
+            header[ct++] = I18NUtils.getMessage(this_bundle, "reports.rendered");
+            header[ct++] = I18NUtils.getMessage(this_bundle, "common.annotation");
+        }
+        header[ct] = CRLF;
+
+        out.write(csvWriter.encodeRow(header));
+
+    }
+
+    private void genReport(){
+
+        // Adjust point lists to remove empty unqiue data sets
+        for(int i = (pointsList.size() - 1); i >= 0; i--){
+            if(rdvLists.get(i).isEmpty()){
+                rdvLists.remove(i);
+                pointsList.remove(i);
+            }
+        }
+
+        //formatReps();
+
+        int pointCt = pointsList.size();
+        String[] pointData = new String[(pointCt * 5) + 1];
+        
+        // Write the header
+        makeHeader(pointCt);
+
+        // Determine longest list length
+        int longest = 0;
+        for(int i = 0; i < pointCt; i++){
+            if(rdvLists.get(i).size() > longest)
+                longest = rdvLists.get(i).size();
+        }
+
+        int currLineCt = 0;
+        // Write point data
+        for(int i = 0; i < longest; i++){
+
+            for(int j = 0; j < pointCt; j++){
+                if(rdvLists.get(j).size() <= i){
+                    // Print empty cells
+                    pointData[currLineCt++] = " ";
+                    pointData[currLineCt++] = " ";
+                    pointData[currLineCt++] = " ";
+                    pointData[currLineCt++] = " ";
+                    pointData[currLineCt++] = " ";
+                }
+                else{
+                    // Print not empty cells
+                    pointData[currLineCt++] = pointsList.get(j).getExtendedName();
+                    textRenderer = pointsList.get(j).getTextRenderer();
+
+                    pointData[currLineCt++] = dtf.print(new DateTime(rdvLists.get(j).get(i).getTime()));
+
+                    if (rdvLists.get(j).get(i).getValue() == null)
+                        pointData[currLineCt++] = data[currLineCt++] = null;
+                    else {
+                        pointData[currLineCt++] = rdvLists.get(j).get(i).getValue().toString();
+                        pointData[currLineCt++] = textRenderer.getText(rdvLists.get(j).get(i).getValue(), TextRenderer.HINT_FULL);
+                    }
+
+                    pointData[currLineCt++] = rdvLists.get(j).get(i).getAnnotation();
+                }
+
+            }   
+            pointData[currLineCt] = CRLF;
+            currLineCt = 0;
+            out.write(csvWriter.encodeRow(pointData));
+        }
+        
+    }
+
+
+    private void formatReps(){
+
+        ArrayList<ReportPointInfo> sortPt = new ArrayList<>();
+        ArrayList<ArrayList<ReportDataValue>> sortDat = new ArrayList<>();
+
+        int ptCt = pointsList.size();
+        while(sortPt.size() < ptCt){
+
+            
+            ReportPointInfo tempInf = pointsList.get(0);
+            int cntr = 1;
+            while(cntr < pointsList.size()){
+                
+                if(pointsList.get(cntr).getExtendedName().compareTo(tempInf.getExtendedName()) < 0)
+                    tempInf = pointsList.get(cntr);
+                cntr++;
+            }
+            
+            sortPt.add(tempInf);
+            pointsList.remove(cntr - 1);
+            sortDat.add(rdvLists.get(cntr - 1));
+        }
+
+        // Overwrite old lists
+        pointsList = sortPt;
+        rdvLists = sortDat;
+
+        
+
+
+
     }
 }
