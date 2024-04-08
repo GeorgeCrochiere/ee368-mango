@@ -146,7 +146,7 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
             }
         }
 
-        //formatReps();
+        formatReps();
 
         int pointCt = pointsList.size();
         String[] pointData = new String[(pointCt * 5) + 1];
@@ -200,21 +200,31 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
 
     private void formatReps(){
         int ptCt = 0;
+        int ind = 0;
         while(ptCt < pointsList.size()){
 
-            ReportPointInfo tempInf = pointsList.get(0 + ptCt);
-            int cntr = 1 + ptCt;
+            ReportPointInfo tempInf = pointsList.get(ptCt);
+            int cntr = ptCt;
             while(cntr < pointsList.size()){
                 
-                if(pointsList.get(cntr).getExtendedName().compareTo(tempInf.getExtendedName()) < 0)
+                // If device names are the send
+                if(pointsList.get(cntr).getDeviceName().compareToIgnoreCase(tempInf.getDeviceName()) == 0){
+                    if(pointsList.get(cntr).getPointName().compareToIgnoreCase(tempInf.getPointName()) > 0){
+                        tempInf = pointsList.get(cntr);
+                        ind = cntr;
+                    }
+                }
+                else if(pointsList.get(cntr).getDeviceName().compareToIgnoreCase(tempInf.getDeviceName()) > 0){
                     tempInf = pointsList.get(cntr);
+                    ind = cntr;
+                }
                 cntr++;
             }
             
             pointsList.add(tempInf);
-            pointsList.remove(cntr - 1);
-            rdvLists.add(rdvLists.get(cntr - 1));
-            rdvLists.remove(cntr - 1);
+            pointsList.remove(ind);         
+            rdvLists.add(rdvLists.get(ind));
+            rdvLists.remove(ind);
             ptCt++;
         }
     }
