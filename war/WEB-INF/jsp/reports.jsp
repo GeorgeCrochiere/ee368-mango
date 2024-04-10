@@ -165,8 +165,8 @@
             show($("reportPointsTableHeaders"));
             dwr.util.addRows("reportPointsTable", reportPointsArray,
                 [
-                    function(data) { return data.pointName; },
-                    function(data) { return data.pointType; },
+                    (data) => data.pointName,
+                    (data) => data.pointType,
                     function(data) {
                     	    return "<input type='text' value='"+ data.colour +"' "+
                     	            "onblur='updatePointColour("+ data.pointId +", this.value)'/>";
@@ -175,25 +175,25 @@
                         return "<input type='checkbox'"+ (data.consolidatedChart ? " checked='checked'" : "") +
                                 " onclick='updatePointConsolidatedChart("+ data.pointId +", this.checked)'/>";
                     },
-                    function(data) {
-                        return `<div>
-                          <input type='radio' id='updatePointLine${data.pointId}' value='0' onclick='updatePointPlotType(${data.pointId}, 0)'/>'
-                          <label for='updatePointLine${data.pointId}'>Line</label>
-                          <input type='radio' id='updatePointScatter${data.pointId}' value='1' onclick='updatePointPlotType(${data.pointId}, 1)'/>'
-                          <label for='updatePointScatter${data.pointId}'>Scatter</label>
-                        </div>`;
+                    function({ pointId }) {
+                        return "<div>" +
+                          "<input name='plotType" + pointId + "' type='radio' id='updatePointLine" + pointId +"' value='0' onclick='updatePointPlotType(" + pointId + ", 0)' checked/>" +
+                          "<label for='updatePointLine" + pointId + "'>Line</label>" +
+                          "<input name='plotType" + pointId + "' type='radio' id='updatePointScatter" + pointId + "' value='1' onclick='updatePointPlotType(" + pointId + ", 1)'/>" +
+                          "<label for='updatePointScatter" + pointId + "'>Scatter</label>" +
+                        "</div>"
                     },
                     function(data) {
                         return "<input type='text' value='"+ data.title +"' "+
-                    	            "onblur='updatePointTitle("+ data.pointId +", this.value)'/>";
+                    	            "onblur='updatePointTitle("+ data.pointId +", this.value)' maxlength='32'/>";
                     },
                     function(data) {
                         return "<input type='text' value='"+ data.xAxisLabel +"' "+
-                    	            "onblur='updatePointXAxisLabel("+ data.pointId +", this.value)'/>";
+                    	            "onblur='updatePointXAxisLabel("+ data.pointId +", this.value)' maxlength='32'/>";
                     },
                     function(data) {
                         return "<input type='text' value='"+ data.yAxisLabel +"' "+
-                    	            "onblur='updatePointYAxisLabel("+ data.pointId +", this.value)'/>";
+                    	            "onblur='updatePointYAxisLabel("+ data.pointId +", this.value)' maxlength='32'/>";
                     },
                     function(data) {
                         const yRefVal = (data.useYReference) ? data.yReference : '';
@@ -685,6 +685,7 @@
                       <td><fmt:message key="reports.dataType"/></td>
                       <td><fmt:message key="reports.colour"/></td>
                       <td><fmt:message key="reports.consolidatedChart"/></td>
+                      <td><fmt:message key="reports.plotType"/></td>
                       <td><fmt:message key="reports.title"/></td>
                       <td><fmt:message key="reports.xaxis"/></td>
                       <td><fmt:message key="reports.yaxis"/></td>
