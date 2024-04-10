@@ -438,21 +438,23 @@ public class ReportDao extends BaseDao {
                     }
                 });
 
-        final ReportDataValue rdv = new ReportDataValue();
+        
         for (final ReportPointInfo point : pointInfos) {
             handler.startPoint(point);
-
-            rdv.setReportPointId(point.getReportPointId());
+            
             final int dataType = point.getDataType();
             ejt.query(REPORT_INSTANCE_DATA_SELECT + "where rd.reportInstancePointId=? order by rd.ts",
                     new Object[] { point.getReportPointId() }, new RowCallbackHandler() {
                         public void processRow(ResultSet rs) throws SQLException {
+                            ReportDataValue rdv = new ReportDataValue();
+                            rdv.setReportPointId(point.getReportPointId());
+                            
                             switch (dataType) {
                             case (DataTypes.NUMERIC):
                                 rdv.setValue(new NumericValue(rs.getDouble(1)));
                                 break;
                             case (DataTypes.BINARY):
-                                rdv.setValue(new BinaryValue(rs.getDouble(1) == 1));
+                                rdv.setValue(new BinaryValue(rs.getInt(1) == 1));
                                 break;
                             case (DataTypes.MULTISTATE):
                                 rdv.setValue(new MultistateValue(rs.getInt(1)));

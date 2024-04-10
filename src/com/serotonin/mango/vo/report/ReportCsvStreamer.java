@@ -41,21 +41,22 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
     private final String[] data = new String[5];
     private final DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss");
     private final CsvWriter csvWriter = new CsvWriter();
-    
     private final ResourceBundle this_bundle;
-    private Boolean horizontal;
-    private String[] header;
-    private static final String CRLF = "\r\n";
+
 
     // Make array lists to store rdvs
     private ArrayList<ArrayList<ReportDataValue>> rdvLists;
     private ArrayList<ReportPointInfo> pointsList;
+    private Boolean horizontal;
+
+    private String[] header;
+    private static final String CRLF = "\r\n";
 
     public ReportCsvStreamer(PrintWriter out, ResourceBundle bundle, Boolean writeHeader) {
         this.out = out;
-        this_bundle = bundle;
+        this_bundle = bundle;       // Captures the environments bundle for object use
 
-        // CHANGED
+        // CDetermine whether a single column, or compound format should be enabled
         if(writeHeader) {
             this.horizontal = false;
             // Write the header by default
@@ -138,13 +139,6 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
 
     private void genReport(){
 
-        // Adjust point lists to remove empty unqiue data sets
-        for(int i = (pointsList.size() - 1); i >= 0; i--){
-            if(rdvLists.get(i).isEmpty()){
-                rdvLists.remove(i);
-                pointsList.remove(i);
-            }
-        }
 
         formatReps();
 
@@ -199,6 +193,15 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
     }
 
     private void formatReps(){
+
+        // Adjust point lists to remove empty unqiue data sets
+        for(int i = (pointsList.size() - 1); i >= 0; i--){
+            if(rdvLists.get(i).isEmpty()){
+                rdvLists.remove(i);
+                pointsList.remove(i);
+            }
+        }
+
         int ptCt = 0;
         int ind = 0;
         while(ptCt < pointsList.size()){
@@ -207,7 +210,6 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
             int cntr = ptCt;
             while(cntr < pointsList.size()){
                 
-                // If device names are the send
                 if(pointsList.get(cntr).getDeviceName().compareToIgnoreCase(tempInf.getDeviceName()) == 0){
                     if(pointsList.get(cntr).getPointName().compareToIgnoreCase(tempInf.getPointName()) > 0){
                         tempInf = pointsList.get(cntr);
