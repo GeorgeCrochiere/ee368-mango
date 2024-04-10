@@ -126,30 +126,18 @@ public class ReportWorkItem implements WorkItem {
 
                 // Title
                 String title = null;
-                try {
-                    if (!StringUtils.isEmpty(reportPoint.getTitle()))
-                        title = reportPoint.getTitle();
-                } catch (InvalidArgumentException e) {
-                    // N/A
-                }
+                if (!StringUtils.isEmpty(reportPoint.getTitle()))
+                    title = reportPoint.getTitle();
 
                 // X Axis Label
                 String xAxisLabel = null;
-                try {
-                    if (StringUtils.isEmpty(reportPoint.getXAxisLabel()))
-                        xAxisLabel = reportPoint.getXAxisLabel();
-                } catch (InvalidArgumentException e) {
-                    // N/A
-                }
+                if (StringUtils.isEmpty(reportPoint.getXAxisLabel()))
+                    xAxisLabel = reportPoint.getXAxisLabel();
 
                 // Y Axis Label
                 String yAxisLabel = null;
-                try {
-                    if (StringUtils.isEmpty(reportPoint.getYAxisLabel()))
-                        yAxisLabel = reportPoint.getYAxisLabel();
-                } catch (InvalidArgumentException e) {
-                    // N/A
-                }
+                if (StringUtils.isEmpty(reportPoint.getYAxisLabel()))
+                    yAxisLabel = reportPoint.getYAxisLabel();
 
                 // Plot Type - Should always be 0 or 1, no other option possible
                 int plotType = reportPoint.getPlotType();
