@@ -454,7 +454,7 @@ public class ReportDao extends BaseDao {
                                 rdv.setValue(new NumericValue(rs.getDouble(1)));
                                 break;
                             case (DataTypes.BINARY):
-                                rdv.setValue(new BinaryValue(rs.getInt(1) == 1));
+                                rdv.setValue(new BinaryValue(rs.getDouble(1) == 1));
                                 break;
                             case (DataTypes.MULTISTATE):
                                 rdv.setValue(new MultistateValue(rs.getInt(1)));

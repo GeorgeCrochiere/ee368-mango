@@ -139,7 +139,7 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
 
     private void genReport(){
 
-
+        // Clean up report data and ppint lists for formated print
         formatReps();
 
         int pointCt = pointsList.size();
@@ -178,7 +178,7 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
                     if (rdvLists.get(j).get(i).getValue() == null)
                         pointData[currLineCt++] = data[currLineCt++] = null;
                     else {
-                        pointData[currLineCt++] = rdvLists.get(j).get(i).getValue().toString();
+                        pointData[currLineCt++] = String.valueOf(rdvLists.get(j).get(i).getValue());
                         pointData[currLineCt++] = textRenderer.getText(rdvLists.get(j).get(i).getValue(), TextRenderer.HINT_FULL);
                     }
 
