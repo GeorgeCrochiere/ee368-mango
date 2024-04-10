@@ -175,6 +175,31 @@
                         return "<input type='checkbox'"+ (data.consolidatedChart ? " checked='checked'" : "") +
                                 " onclick='updatePointConsolidatedChart("+ data.pointId +", this.checked)'/>";
                     },
+                    function(data) {
+                        return `<div>
+                          <input type='radio' id='updatePointLine${data.pointId}' value='0' onclick='updatePointPlotType(${data.pointId}, 0)'/>'
+                          <label for='updatePointLine${data.pointId}'>Line</label>
+                          <input type='radio' id='updatePointScatter${data.pointId}' value='1' onclick='updatePointPlotType(${data.pointId}, 1)'/>'
+                          <label for='updatePointScatter${data.pointId}'>Scatter</label>
+                        </div>`;
+                    },
+                    function(data) {
+                        return "<input type='text' value='"+ data.title +"' "+
+                    	            "onblur='updatePointTitle("+ data.pointId +", this.value)'/>";
+                    },
+                    function(data) {
+                        return "<input type='text' value='"+ data.xAxisLabel +"' "+
+                    	            "onblur='updatePointXAxisLabel("+ data.pointId +", this.value)'/>";
+                    },
+                    function(data) {
+                        return "<input type='text' value='"+ data.yAxisLabel +"' "+
+                    	            "onblur='updatePointYAxisLabel("+ data.pointId +", this.value)'/>";
+                    },
+                    function(data) {
+                        const yRefVal = (data.useYReference) ? data.yReference : '';
+                        return "<input type='number' value='"+ yRefVal +"' "+
+                    	            "onblur='updatePointYReference("+ data.pointId +", this.value)'/>";
+                    },
                     function(data) { 
                             return "<img src='images/bullet_delete.png' class='ptr' "+
                                     "onclick='removeFromReportPointsArray("+ data.pointId +")'/>";
@@ -209,35 +234,59 @@
             item["consolidatedChart"] = consolidatedChart;
     }
 
+    function updatePointPlotType(pointId, plotType) {
+      var item = getElement(reportPointsArray, pointId, "pointId");
+      if (item)
+          item["plotType"] = plotType;
+    }
+
     function updatePointTitle(pointId, title) {
         var item = getElement(reportPointsArray, pointId, "pointId");
-        if (item)
+        if (item) {
+          if (title.length <= 32) {
             item["title"] = title;
+            showMessage("titleError");
+          } else {
+            showMessage("titleError", "<fmt:message key="reports.validate.title"/>");
+          }
+        }
+            
     }
 
     function updatePointXAxisLabel(pointId, xAxisLabel) {
         var item = getElement(reportPointsArray, pointId, "pointId");
-        if (item)
+        if (item) {
+          if (xAxisLabel.length <= 32) {
             item["xAxisLabel"] = xAxisLabel;
+            showMessage("xAxisError");
+          } else {
+            showMessage("xAxisError", "<fmt:message key="reports.validate.xAxisLabel"/>");
+          }
+        }
     }
 
     function updatePointYAxisLabel(pointId, yAxisLabel) {
         var item = getElement(reportPointsArray, pointId, "pointId");
-        if (item)
+        if (item) {
+          if (yAxisLabel.length <= 32) {
             item["yAxisLabel"] = yAxisLabel;
+            showMessage("yAxisError");
+          } else {
+            showMessage("yAxisError", "<fmt:message key="reports.validate.yAxisLabel"/>");
+          }
+        }
     }
 
     function updatePointYReference(pointId, yReference) {
         var item = getElement(reportPointsArray, pointId, "pointId");
-        if ((item) && (yReference.length > 0) && (parseFloat(yReference) == yReference)) {
-          item["yReference"] = yReference;
-          item["useYReference"] = true;
-        } else {
-          item["yReference"] = 0;
-          item["useYReference"] = false;
-        }
-        if ((parseFloat(yReference) == yReference)) {
-          
+        if (item) {
+          if ((yReference.length > 0) && (parseFloat(yReference) == yReference)) {
+            item["yReference"] = yReference;
+            item["useYReference"] = true;
+          } else {
+            item["yReference"] = 0;
+            item["useYReference"] = false;
+          }
         }
     }
     
