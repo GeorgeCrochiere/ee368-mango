@@ -69,7 +69,7 @@ public class ImageChartUtils {
     }
 
     public static byte[] getChartData(PointTimeSeriesCollection ptsc, int width, int height) {
-        return getChartData(ptsc, true, width, height, 0, "", "", "", false, 0.0);
+        return getChartData(ptsc, true, width, height);
     }
 
     public static byte[] getChartData(PointTimeSeriesCollection ptsc, boolean showLegend, int width, int height) {
