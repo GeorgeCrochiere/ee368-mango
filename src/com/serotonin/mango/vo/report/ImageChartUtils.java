@@ -68,6 +68,14 @@ public class ImageChartUtils {
                 plotType, title, xAxisLabel, yAxisLabel, useYRef, yRefVal);
     }
 
+    public static byte[] getChartData(PointTimeSeriesCollection ptsc, int width, int height) {
+        return getChartData(ptsc, true, width, height, 0, "", "", "", false, 0.0);
+    }
+
+    public static byte[] getChartData(PointTimeSeriesCollection ptsc, boolean showLegend, int width, int height) {
+        return getChartData(ptsc, showLegend, width, height, 0, "", "", "", false, 0.0);
+    }
+
     public static byte[] getChartData(PointTimeSeriesCollection pointTimeSeriesCollection, int width, int height,
             int plotType, String title, String xAxisLabel, String yAxisLabel, boolean useYRef, double yRefVal) {
         return getChartData(pointTimeSeriesCollection, pointTimeSeriesCollection.hasMultiplePoints(), width, height,
