@@ -144,7 +144,6 @@ public class UserDao extends BaseDao {
     private static final String USER_UPDATE = "update users set "
             + "  username=?, password=?, email=?, phone=?, admin=?, disabled=?, homeUrl=?, receiveAlarmEmails=?, "
             + "  receiveOwnAuditEvents=? " + "where id=?";
-}
 
     void updateUser(User user) {
         ejt.update(
