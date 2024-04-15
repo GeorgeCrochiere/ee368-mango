@@ -58,7 +58,9 @@ abstract public class ReportExportBase extends HttpServlet {
         response.setContentType("text/csv");
 
         ResourceBundle bundle = Common.getBundle();
+        
         if (content == CONTENT_REPORT) {
+            // Added a parameter, false, to ReportCsvStreamer class for horizontal_csv 
             ReportCsvStreamer creator = new ReportCsvStreamer(response.getWriter(), bundle, false);
             reportDao.reportInstanceData(instanceId, creator);
         }

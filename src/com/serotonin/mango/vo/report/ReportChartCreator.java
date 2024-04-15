@@ -472,6 +472,7 @@ public class ReportChartCreator {
             try {
                 if (createExportFile) {
                     exportFile = File.createTempFile("tempCSV", ".csv");
+                    // Added parameter, true, to class ReportCsvStreamer for formating data in a horizonta csv
                     reportCsvStreamer = new ReportCsvStreamer(new PrintWriter(new FileWriter(exportFile)), bundle, true);
                 }
             }

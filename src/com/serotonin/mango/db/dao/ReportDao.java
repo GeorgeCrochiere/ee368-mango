@@ -446,7 +446,9 @@ public class ReportDao extends BaseDao {
             ejt.query(REPORT_INSTANCE_DATA_SELECT + "where rd.reportInstancePointId=? order by rd.ts",
                     new Object[] { point.getReportPointId() }, new RowCallbackHandler() {
                         public void processRow(ResultSet rs) throws SQLException {
+                            // Moved the intialization of rdv to inside the overriden processRow
                             ReportDataValue rdv = new ReportDataValue();
+                            // Moved rdv.setReportPointID to inside the overriden processRow
                             rdv.setReportPointId(point.getReportPointId());
                             
                             switch (dataType) {
