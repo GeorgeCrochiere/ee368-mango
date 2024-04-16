@@ -134,6 +134,9 @@ alter table reportInstancePoints default character set utf8;
 alter table reportInstancePoints modify pointName varchar(100) character set utf8;
 alter table reportInstancePoints modify dataSourceName varchar(40) character set utf8;
 alter table reportInstancePoints modify startValue varchar(4096) character set utf8;
+alter table reportInstancePoints modify title varchar(50) character set utf8;
+alter table reportInstancePoints modify xAxisLabel varchar(50) character set utf8;
+alter table reportInstancePoints modify yAxisLabel varchar(50) character set utf8;
 
 alter table reportInstanceData default character set utf8;
 

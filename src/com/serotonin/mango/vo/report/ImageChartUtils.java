@@ -100,9 +100,9 @@ public class ImageChartUtils {
             boolean useYRef, double yRefVal) throws IOException {
 
         // Get data values for strings
-        String titleVal = (title.length() > 0) ? title : null;
-        String xAxisVal = (xAxisLabel.length() > 0) ? xAxisLabel : null;
-        String yAxisVal = (yAxisLabel.length() > 0) ? yAxisLabel : null;
+        String titleVal = (title != null && title.length() > 0) ? title : null;
+        String xAxisVal = (xAxisLabel != null && xAxisLabel.length() > 0) ? xAxisLabel : null;
+        String yAxisVal = (yAxisLabel != null && yAxisLabel.length() > 0) ? yAxisLabel : null;
 
         // Create chart type, Linear vs Scatter
         JFreeChart chart;

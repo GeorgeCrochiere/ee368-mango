@@ -400,6 +400,12 @@ create table reportInstancePoints (
   textRenderer longblob,
   colour varchar(6),
   consolidatedChart char(1),
+  plotType int,
+  title varchar(50),
+  xAxisLabel varchar(50),
+  yAxisLabel varchar(50),
+  useYRef char(1),
+  yRefVal double,
   primary key (id)
 ) engine=InnoDB;
 alter table reportInstancePoints add constraint reportInstancePointsFk1 foreign key (reportInstanceId) 

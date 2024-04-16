@@ -1,10 +1,12 @@
 package com.serotonin.mango.vo.report;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import com.google.common.graph.ElementOrder;
 import com.serotonin.util.SerializationHelper;
 
 public class ReportPointVO implements Serializable {
@@ -117,19 +119,43 @@ public class ReportPointVO implements Serializable {
             title = SerializationHelper.readSafeUTF(in);
             xAxisLabel = SerializationHelper.readSafeUTF(in);
             yAxisLabel = SerializationHelper.readSafeUTF(in);
-            yReference = in.readDouble();
             useYReference = true;
+            yReference = in.readDouble();
 
         } else if (ver == 2) {
             pointId = in.readInt();
             colour = SerializationHelper.readSafeUTF(in);
             consolidatedChart = in.readBoolean();
-            title = SerializationHelper.readSafeUTF(in);
-            xAxisLabel = SerializationHelper.readSafeUTF(in);
-            yAxisLabel = SerializationHelper.readSafeUTF(in);
-            yReference = in.readDouble();
-            useYReference = in.readBoolean();
-
+            try {
+                plotType = in.readInt();
+            } catch (EOFException e) {
+                plotType = 0;
+            }
+            try {
+                title = SerializationHelper.readSafeUTF(in);
+            } catch (EOFException e) {
+                title = "";
+            }
+            try {
+                xAxisLabel = SerializationHelper.readSafeUTF(in);
+            } catch (EOFException e) {
+                xAxisLabel = "";
+            }
+            try {
+                yAxisLabel = SerializationHelper.readSafeUTF(in);
+            } catch (EOFException e) {
+                yAxisLabel = "";
+            }
+            try {
+                useYReference = in.readBoolean();
+            } catch (EOFException e) {
+                useYReference = false;
+            }
+            try {
+                yReference = in.readDouble();
+            } catch (EOFException e) {
+                yReference = 0.0;
+            }
         }
     }
 }
