@@ -41,22 +41,22 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
     private final String[] data = new String[5];
     private final DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss");
     private final CsvWriter csvWriter = new CsvWriter();
-    private final ResourceBundle this_bundle;
+    private final ResourceBundle this_bundle; // Data member to store current exportation sessions resource bundle
 
 
-    // Make array lists to store rdvs
+    // Array lists for data value and point info object storage
     private ArrayList<ArrayList<ReportDataValue>> rdvLists;
     private ArrayList<ReportPointInfo> pointsList;
-    private Boolean horizontal;
+    private Boolean horizontal; // Predicate value for format processing
 
-    private String[] header;
-    private static final String CRLF = "\r\n";
+    private String[] header; // String array for horizontal header generation
+    private static final String CRLF = "\r\n"; // Constant to append to the end of a row for file printing
 
     public ReportCsvStreamer(PrintWriter out, ResourceBundle bundle, Boolean writeHeader) {
         this.out = out;
-        this_bundle = bundle;       // Captures the environments bundle for object use
+        this_bundle = bundle;       // Captures the sessions bundle for object use
 
-        // CDetermine whether a single column, or compound format should be enabled
+        // If path for default single column report generation
         if(writeHeader) {
             this.horizontal = false;
             // Write the header by default
@@ -67,6 +67,7 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
             data[4] = I18NUtils.getMessage(this_bundle, "common.annotation");
             out.write(csvWriter.encodeRow(data));
         }
+        // Initialization for private data members for horizontal report generation
         else{
             this.rdvLists = new ArrayList<>();
             this.pointsList  = new ArrayList<>();
@@ -76,11 +77,12 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
     }
 
     public void startPoint(ReportPointInfo pointInfo) {
-
+        // if true start default row print processing
         if(!horizontal){
             data[0] = pointInfo.getExtendedName();
             textRenderer = pointInfo.getTextRenderer();
         }
+        // else adds point to unique point list and intializes new report data value list if new unique point is processed
         else{
             // Start new list for unique point
             if(pointsList.isEmpty() || pointInfo.getExtendedName() != pointsList.get(pointsList.size() - 1).getExtendedName()){
@@ -91,7 +93,7 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
     }
 
     public void pointData(ReportDataValue rdv) {
-
+        // if true adds unique sensor data at specific times to row then prints to csv file
         if(!horizontal){
             data[1] = dtf.print(new DateTime(rdv.getTime()));
 
@@ -106,37 +108,31 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
 
             out.write(csvWriter.encodeRow(data));
         }
+        // else adds report data value object to current report data value array list
         else
-            rdvLists.get(pointsList.size() - 1).add(rdv);        // Add the point data  to the rdv sub-list
+            rdvLists.get(pointsList.size() - 1).add(rdv);
             
 
     }
 
     public void done() {
+        //  if true generate the report with new formating
         if(horizontal)
-            genReport();    // Don't forget to call the meat
+            genReport();
 
         out.flush();
         out.close();
     }
 
-    private void makeHeader(int pointCt){
-        this.header = new String[(pointCt * 5) + 1];
+    /*
+        Purpose:
 
-        int ct = 0;
-        while(ct < (pointCt * 5)){
-            header[ct++] = I18NUtils.getMessage(this_bundle, "reports.pointName");
-            header[ct++] = I18NUtils.getMessage(this_bundle, "common.time");
-            header[ct++] = I18NUtils.getMessage(this_bundle, "common.value");
-            header[ct++] = I18NUtils.getMessage(this_bundle, "reports.rendered");
-            header[ct++] = I18NUtils.getMessage(this_bundle, "common.annotation");
-        }
-        header[ct] = CRLF;
+        Pre:
 
-        out.write(csvWriter.encodeRow(header));
+        Post:
 
-    }
-
+    */
+    // Generates the report 
     private void genReport(){
 
         // Clean up report data and ppint lists for formated print
@@ -192,6 +188,39 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
         }
     }
 
+    /*
+        Purpose: Makes the header for each unique data sensor
+
+        Pre: parameter is pointCt which represents the points that need to be written to the csv
+
+        Post: Outputs to the written headers
+
+    */
+    private void makeHeader(int pointCt){
+        this.header = new String[(pointCt * 5) + 1];
+
+        int ct = 0;
+        while(ct < (pointCt * 5)){
+            header[ct++] = I18NUtils.getMessage(this_bundle, "reports.pointName");
+            header[ct++] = I18NUtils.getMessage(this_bundle, "common.time");
+            header[ct++] = I18NUtils.getMessage(this_bundle, "common.value");
+            header[ct++] = I18NUtils.getMessage(this_bundle, "reports.rendered");
+            header[ct++] = I18NUtils.getMessage(this_bundle, "common.annotation");
+        }
+        header[ct] = CRLF;
+        // to write the entire row to csv
+        out.write(csvWriter.encodeRow(header));
+
+    }
+
+    /*
+        Purpose:
+
+        Pre:
+
+        Post:
+
+    */
     private void formatReps(){
 
         // Adjust point lists to remove empty unqiue data sets
@@ -204,12 +233,15 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
 
         int ptCt = 0;
         int ind = 0;
+        // Index through each data value entry
         while(ptCt < pointsList.size()){
 
             ReportPointInfo tempInf = pointsList.get(ptCt);
             int cntr = ptCt;
+            // Index through each unique point
             while(cntr < pointsList.size()){
                 
+                // Interpret order of points first by device name, then point name is the same device
                 if(pointsList.get(cntr).getDeviceName().compareToIgnoreCase(tempInf.getDeviceName()) == 0){
                     if(pointsList.get(cntr).getPointName().compareToIgnoreCase(tempInf.getPointName()) > 0){
                         tempInf = pointsList.get(cntr);
@@ -222,7 +254,7 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
                 }
                 cntr++;
             }
-            
+            // Update element locations in rdv and point info lists
             pointsList.add(tempInf);
             pointsList.remove(ind);         
             rdvLists.add(rdvLists.get(ind));
