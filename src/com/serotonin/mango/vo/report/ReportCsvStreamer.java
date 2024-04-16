@@ -125,11 +125,12 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
     }
 
     /*
-        Purpose:
+        Purpose: Generates a horizontally formatted '.csv' file containing sensor point information
+                    Points are arranged in unique column groups, ordered alphabetically from left to right
 
-        Pre:
+        Pre: ReportCsvStreamer's done() function has been called after array lists have been appropriately populated
 
-        Post:
+        Post: '.csv' file has been print to with proper format and exported for users
 
     */
     // Generates the report 
@@ -193,7 +194,7 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
 
         Pre: parameter is pointCt which represents the points that need to be written to the csv
 
-        Post: Outputs to the written headers
+        Post: Outputs the header, where the number of unique headers is equivalent to the number of pointCt
 
     */
     private void makeHeader(int pointCt){
@@ -214,11 +215,11 @@ public class ReportCsvStreamer implements ReportDataStreamHandler {
     }
 
     /*
-        Purpose:
+        Purpose: Alphabetically sorts and removes empty sets of sensor point data within the array list pdm's
 
-        Pre:
+        Pre: Array lists have been appropriately populated with sensor point data objects
 
-        Post:
+        Post: Array lists pdm's have been updated to be order alphabetically with empty sets removed
 
     */
     private void formatReps(){
