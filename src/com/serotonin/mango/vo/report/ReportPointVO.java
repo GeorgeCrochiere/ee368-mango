@@ -119,8 +119,8 @@ public class ReportPointVO implements Serializable {
             title = SerializationHelper.readSafeUTF(in);
             xAxisLabel = SerializationHelper.readSafeUTF(in);
             yAxisLabel = SerializationHelper.readSafeUTF(in);
-            useYReference = true;
             yReference = in.readDouble();
+            useYReference = true;
 
         } else if (ver == 2) {
             pointId = in.readInt();
@@ -147,14 +147,14 @@ public class ReportPointVO implements Serializable {
                 yAxisLabel = "";
             }
             try {
-                useYReference = in.readBoolean();
-            } catch (EOFException e) {
-                useYReference = false;
-            }
-            try {
                 yReference = in.readDouble();
             } catch (EOFException e) {
                 yReference = 0.0;
+            }
+            try {
+                useYReference = in.readBoolean();
+            } catch (EOFException e) {
+                useYReference = false;
             }
         }
     }

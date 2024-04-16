@@ -75,9 +75,9 @@
         reportPointsArray = new Array();
         for (var i=0; i<report.points.length; i++)
             addToReportPointsArray(report.points[i].pointId, report.points[i].colour,
-                    report.points[i].consolidatedChart, report.points[i].plotType || 0, report.points[i].title || "",
-                    report.points[i].xAxisLabel || "", report.points[i].yAxisLabel || "", report.points[i].yReference || 0,
-                    report.points[i].useYReference || false);
+                    report.points[i].consolidatedChart, report.points[i].plotType ?? 0, report.points[i].title ?? "",
+                    report.points[i].xAxisLabel ?? "", report.points[i].yAxisLabel ?? "", report.points[i].yReference ?? 0,
+                    report.points[i].useYReference ?? false);
         $set("includeEvents", report.includeEvents);
         $set("includeUserComments", report.includeUserComments);
         $set("dateRangeType", report.dateRangeType);
@@ -140,7 +140,7 @@
                 title : !title ? (!data.title ? "" : data.title) : title,
                 xAxisLabel : !xAxisLabel ? (!data.xAxisLabel ? "" : data.xAxisLabel) : xAxisLabel,
                 yAxisLabel : !yAxisLabel ? (!data.yAxisLabel ? "" : data.yAxisLabel) : yAxisLabel,
-                yReference : !yReference ? (!data.yReference ? "" : data.yReference) : yReference,
+                yReference : yReference,
                 useYReference : useYReference
             };
         }
@@ -486,7 +486,8 @@
         var points = new Array();
         for (var i=0; i<reportPointsArray.length; i++)
             points[points.length] = { pointId: reportPointsArray[i].pointId, colour: reportPointsArray[i].colour,
-        		    consolidatedChart: reportPointsArray[i].consolidatedChart };
+        		    consolidatedChart: reportPointsArray[i].consolidatedChart, plotType: reportPointsArray[i].plotType, title: reportPointsArray[i].title, xAxisLabel: reportPointsArray[i].xAxisLabel, yAxisLabel: reportPointsArray[i].yAxisLabel, yReference: +reportPointsArray[i].yReference, useYReference: reportPointsArray[i].useYReference };
+        console.log(points);
         return points;
     }
     
