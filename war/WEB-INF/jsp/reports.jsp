@@ -485,9 +485,17 @@
     function getReportPointIdsArray() {
         var points = new Array();
         for (var i=0; i<reportPointsArray.length; i++)
-            points[points.length] = { pointId: reportPointsArray[i].pointId, colour: reportPointsArray[i].colour,
-        		    consolidatedChart: reportPointsArray[i].consolidatedChart, plotType: reportPointsArray[i].plotType, title: reportPointsArray[i].title, xAxisLabel: reportPointsArray[i].xAxisLabel, yAxisLabel: reportPointsArray[i].yAxisLabel, yReference: +reportPointsArray[i].yReference, useYReference: reportPointsArray[i].useYReference };
-        console.log(points);
+            points[points.length] = { 
+              pointId: reportPointsArray[i].pointId, 
+              colour: reportPointsArray[i].colour,
+        		  consolidatedChart: reportPointsArray[i].consolidatedChart,
+              plotType: reportPointsArray[i].plotType, 
+              title: reportPointsArray[i].title, 
+              useYReference: reportPointsArray[i].useYReference,
+              xaxisLabel: reportPointsArray[i].xAxisLabel,  
+              yreference: +reportPointsArray[i].yReference,
+              yaxisLabel: reportPointsArray[i].yAxisLabel
+            };
         return points;
     }
     

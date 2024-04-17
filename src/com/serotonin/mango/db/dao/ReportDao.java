@@ -314,9 +314,12 @@ public class ReportDao extends BaseDao {
                             boolToChar(pointInfo.isConsolidatedChart()), pointInfo.getPlotType(), pointInfo.getTitle(),
                             pointInfo.getXAxisLabel(), pointInfo.getYAxisLabel(), boolToChar(pointInfo.isUseYRef()),
                             pointInfo.getYRefVal() },
-                    new int[] { Types.INTEGER, Types.VARCHAR,
-                            Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.BLOB, Types.VARCHAR, Types.CHAR,
-                            Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.DOUBLE
+                    new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.INTEGER,
+                            Types.VARCHAR,
+                            Types.BLOB, Types.VARCHAR,
+                            Types.CHAR, Types.INTEGER, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.CHAR,
+                            Types.DOUBLE
                     });
 
             // Insert the reportInstanceData records

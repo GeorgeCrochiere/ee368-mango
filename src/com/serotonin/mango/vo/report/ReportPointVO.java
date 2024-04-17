@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import com.google.common.graph.ElementOrder;
+import com.serotonin.json.JsonObject;
 import com.serotonin.util.SerializationHelper;
 
 public class ReportPointVO implements Serializable {
@@ -15,10 +16,10 @@ public class ReportPointVO implements Serializable {
     private boolean consolidatedChart;
     private int plotType; // 0 = linear, 1 = Scatter
     private String title;
-    private String xAxisLabel;
-    private String yAxisLabel;
-    private double yReference;
     private boolean useYReference;
+    private String xaxisLabel;
+    private double yreference;
+    private String yaxisLabel;
 
     public int getPointId() {
         return pointId;
@@ -60,28 +61,28 @@ public class ReportPointVO implements Serializable {
         this.title = title;
     }
 
-    public String getXAxisLabel() {
-        return this.xAxisLabel;
+    public String getXaxisLabel() {
+        return this.xaxisLabel;
     }
 
-    public void setXAxisLabel(String xAxis) {
-        this.xAxisLabel = xAxis;
+    public void setXaxisLabel(String xAxis) {
+        this.xaxisLabel = xAxis;
     }
 
-    public String getYAxisLabel() {
-        return this.yAxisLabel;
+    public String getYaxisLabel() {
+        return this.yaxisLabel;
     }
 
-    public void setYAxisLabel(String yAxis) {
-        this.yAxisLabel = yAxis;
+    public void setYaxisLabel(String yAxis) {
+        this.yaxisLabel = yAxis;
     }
 
-    public double getYReference() {
-        return this.yReference;
+    public double getYreference() {
+        return this.yreference;
     }
 
-    public void setYReference(double yReference) {
-        this.yReference = yReference;
+    public void setYreference(double yReference) {
+        this.yreference = yReference;
     }
 
     public boolean getUseYReference() {
@@ -105,6 +106,12 @@ public class ReportPointVO implements Serializable {
         out.writeInt(pointId);
         SerializationHelper.writeSafeUTF(out, colour);
         out.writeBoolean(consolidatedChart);
+        out.writeInt(plotType);
+        SerializationHelper.writeSafeUTF(out, title);
+        out.writeBoolean(useYReference);
+        SerializationHelper.writeSafeUTF(out, xaxisLabel);
+        out.writeDouble(yreference);
+        SerializationHelper.writeSafeUTF(out, yaxisLabel);
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
@@ -116,11 +123,12 @@ public class ReportPointVO implements Serializable {
             pointId = in.readInt();
             colour = SerializationHelper.readSafeUTF(in);
             consolidatedChart = true;
+            plotType = 0;
             title = SerializationHelper.readSafeUTF(in);
-            xAxisLabel = SerializationHelper.readSafeUTF(in);
-            yAxisLabel = SerializationHelper.readSafeUTF(in);
-            yReference = in.readDouble();
             useYReference = true;
+            xaxisLabel = SerializationHelper.readSafeUTF(in);
+            yreference = in.readDouble();
+            yaxisLabel = SerializationHelper.readSafeUTF(in);
 
         } else if (ver == 2) {
             pointId = in.readInt();
@@ -133,28 +141,29 @@ public class ReportPointVO implements Serializable {
             }
             try {
                 title = SerializationHelper.readSafeUTF(in);
+                // title = in.toString();
             } catch (EOFException e) {
                 title = "";
-            }
-            try {
-                xAxisLabel = SerializationHelper.readSafeUTF(in);
-            } catch (EOFException e) {
-                xAxisLabel = "";
-            }
-            try {
-                yAxisLabel = SerializationHelper.readSafeUTF(in);
-            } catch (EOFException e) {
-                yAxisLabel = "";
-            }
-            try {
-                yReference = in.readDouble();
-            } catch (EOFException e) {
-                yReference = 0.0;
             }
             try {
                 useYReference = in.readBoolean();
             } catch (EOFException e) {
                 useYReference = false;
+            }
+            try {
+                xaxisLabel = SerializationHelper.readSafeUTF(in);
+            } catch (EOFException e) {
+                xaxisLabel = "";
+            }
+            try {
+                yreference = in.readDouble();
+            } catch (EOFException e) {
+                yreference = 0.0;
+            }
+            try {
+                yaxisLabel = SerializationHelper.readSafeUTF(in);
+            } catch (EOFException e) {
+                yaxisLabel = "";
             }
         }
     }

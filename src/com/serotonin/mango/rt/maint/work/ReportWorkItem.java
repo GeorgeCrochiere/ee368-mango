@@ -131,19 +131,19 @@ public class ReportWorkItem implements WorkItem {
 
                 // X Axis Label
                 String xAxisLabel = null;
-                if (StringUtils.isEmpty(reportPoint.getXAxisLabel()))
-                    xAxisLabel = reportPoint.getXAxisLabel();
+                if (!StringUtils.isEmpty(reportPoint.getXaxisLabel()))
+                    xAxisLabel = reportPoint.getXaxisLabel();
 
                 // Y Axis Label
                 String yAxisLabel = null;
-                if (StringUtils.isEmpty(reportPoint.getYAxisLabel()))
-                    yAxisLabel = reportPoint.getYAxisLabel();
+                if (!StringUtils.isEmpty(reportPoint.getYaxisLabel()))
+                    yAxisLabel = reportPoint.getYaxisLabel();
 
                 // Plot Type - Should always be 0 or 1, no other option possible
                 int plotType = reportPoint.getPlotType();
 
                 boolean useYRef = reportPoint.getUseYReference();
-                double yRefVal = reportPoint.getYReference();
+                double yRefVal = reportPoint.getYreference();
 
                 points.add(new ReportDao.PointInfo(point, colour, reportPoint.isConsolidatedChart(), plotType, title,
                         xAxisLabel, yAxisLabel, useYRef, yRefVal));

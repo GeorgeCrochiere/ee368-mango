@@ -18,8 +18,11 @@
  */
 package com.serotonin.mango.vo.report;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,10 +35,13 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYTextAnnotation;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.plot.Marker;
 import org.jfree.chart.plot.ValueMarker;
+import org.jfree.chart.renderer.xy.AbstractXYItemRenderer;
+import org.jfree.chart.renderer.xy.XYDotRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
 import org.jfree.data.general.SeriesException;
@@ -104,14 +110,9 @@ public class ImageChartUtils {
         String xAxisVal = (xAxisLabel != null && xAxisLabel.length() > 0) ? xAxisLabel : null;
         String yAxisVal = (yAxisLabel != null && yAxisLabel.length() > 0) ? yAxisLabel : null;
 
-        // Create chart type, Linear vs Scatter
+        // Create chart type
         JFreeChart chart;
-        if (plotType == LINEAR_PLOT) {
-            chart = ChartFactory.createTimeSeriesChart(titleVal, xAxisVal, yAxisVal, null, showLegend, false, false);
-        } else {
-            chart = ChartFactory.createScatterPlot(titleVal, xAxisVal, yAxisVal, null, PlotOrientation.HORIZONTAL,
-                    showLegend, false, false);
-        }
+        chart = ChartFactory.createTimeSeriesChart(titleVal, xAxisVal, yAxisVal, null, showLegend, false, false);
         chart.setBackgroundPaint(SystemSettingsDao.getColour(SystemSettingsDao.CHART_BACKGROUND_COLOUR));
 
         XYPlot plot = chart.getXYPlot();
@@ -120,17 +121,28 @@ public class ImageChartUtils {
         plot.setDomainGridlinePaint(gridlines);
         plot.setRangeGridlinePaint(gridlines);
 
-        // Add Y Reference
-        if (useYRef) {
-            plot.addRangeMarker(0, new ValueMarker(yRefVal), Layer.FOREGROUND);
-        }
-
         double numericMin = 0;
         double numericMax = 1;
         if (pointTimeSeriesCollection.hasNumericData()) {
             // XYSplineRenderer numericRenderer = new XYSplineRenderer();
             // numericRenderer.setBaseShapesVisible(false);
-            XYLineAndShapeRenderer numericRenderer = new XYLineAndShapeRenderer(true, false);
+
+            // set renderer based on plot type
+            AbstractXYItemRenderer numericRenderer;
+            if (plotType == SCATTER_PLOT) {
+                XYDotRenderer tempRenderer = new XYDotRenderer();
+                tempRenderer.setDotHeight(2);
+                tempRenderer.setDotWidth(2);
+                numericRenderer = tempRenderer;
+            } else {
+                numericRenderer = new XYLineAndShapeRenderer(true, false);
+            }
+
+            // Add y-reference line - currently erroring
+            // if (useYRef) {
+            // numericRenderer.drawDomainLine(null, plot, null, null, yRefVal, Color.BLUE,
+            // new BasicStroke(2));
+            // }
 
             plot.setDataset(NUMERIC_DATA_INDEX, pointTimeSeriesCollection.getNumericTimeSeriesCollection());
             plot.setRenderer(NUMERIC_DATA_INDEX, numericRenderer);

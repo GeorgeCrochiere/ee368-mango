@@ -67,13 +67,13 @@ public class ReportsDwr extends BaseDwr {
         if (id == Common.NEW_ID) {
             report = new ReportVO();
             report.setName(getMessage("common.newName"));
-        }
-        else {
+        } else {
             report = new ReportDao().getReport(id);
 
             if (copy) {
                 report.setId(Common.NEW_ID);
-                report.setName(LocalizableMessage.getMessage(getResourceBundle(), "common.copyPrefix", report.getName()));
+                report.setName(
+                        LocalizableMessage.getMessage(getResourceBundle(), "common.copyPrefix", report.getName()));
             }
 
             Permissions.ensureReportPermission(Common.getUser(), report);
@@ -99,12 +99,10 @@ public class ReportsDwr extends BaseDwr {
                 // Check the cron pattern.
                 try {
                     new CronTimerTrigger(scheduleCron);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     response.addContextualMessage("scheduleCron", "reports.validate.cron", e.getMessage());
                 }
-            }
-            else {
+            } else {
                 if (runDelayMinutes < 0)
                     response.addContextualMessage("runDelayMinutes", "reports.validate.lessThan0");
                 else if (runDelayMinutes > 59)
@@ -124,8 +122,7 @@ public class ReportsDwr extends BaseDwr {
         if (id == Common.NEW_ID) {
             report = new ReportVO();
             report.setUserId(user.getId());
-        }
-        else
+        } else
             report = reportDao.getReport(id);
 
         Permissions.ensureReportPermission(user, report);
@@ -257,8 +254,7 @@ public class ReportsDwr extends BaseDwr {
             try {
                 if (!StringUtils.isEmpty(point.getColour()))
                     ColorUtils.toColor(point.getColour());
-            }
-            catch (InvalidArgumentException e) {
+            } catch (InvalidArgumentException e) {
                 response.addContextualMessage("points", "reports.validate.colour", point.getColour());
             }
         }
