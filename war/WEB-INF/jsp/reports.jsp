@@ -283,9 +283,11 @@
           if ((yReference.length > 0) && (parseFloat(yReference) == yReference)) {
             item["yReference"] = yReference;
             item["useYReference"] = true;
+            showMessage("yAxisError");
           } else {
             item["yReference"] = 0;
             item["useYReference"] = false;
+            showMessage("yAxisError", "<fmt:message key="reports.validate.yReference"/>");
           }
         }
     }

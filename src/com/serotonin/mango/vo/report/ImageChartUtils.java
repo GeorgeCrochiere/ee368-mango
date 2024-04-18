@@ -112,7 +112,7 @@ public class ImageChartUtils {
 
         // Create chart type
         JFreeChart chart;
-        chart = ChartFactory.createTimeSeriesChart(titleVal, xAxisVal, yAxisVal, null, showLegend, false, false);
+        chart = ChartFactory.createTimeSeriesChart(titleVal, xAxisVal, yAxisVal, null, true, false, false);
         chart.setBackgroundPaint(SystemSettingsDao.getColour(SystemSettingsDao.CHART_BACKGROUND_COLOUR));
 
         XYPlot plot = chart.getXYPlot();
@@ -138,12 +138,6 @@ public class ImageChartUtils {
                 numericRenderer = new XYLineAndShapeRenderer(true, false);
             }
 
-            // Add y-reference line - currently erroring
-            // if (useYRef) {
-            // numericRenderer.drawDomainLine(null, plot, null, null, yRefVal, Color.BLUE,
-            // new BasicStroke(2));
-            // }
-
             plot.setDataset(NUMERIC_DATA_INDEX, pointTimeSeriesCollection.getNumericTimeSeriesCollection());
             plot.setRenderer(NUMERIC_DATA_INDEX, numericRenderer);
 
@@ -155,6 +149,23 @@ public class ImageChartUtils {
 
             numericMin = plot.getRangeAxis().getLowerBound();
             numericMax = plot.getRangeAxis().getUpperBound();
+
+            // Add y-reference line - currently erroring
+            if (useYRef) {
+                ValueMarker marker = new ValueMarker(yRefVal);
+                marker.setPaint(Color.BLUE);
+                marker.setAlpha(0.5f);
+                marker.setStroke(new BasicStroke(2));
+                plot.addRangeMarker(marker);
+                double testnumericMin = (plot.getRangeAxis().getLowerBound() < yRefVal)
+                        ? plot.getRangeAxis().getLowerBound()
+                        : yRefVal;
+                double testnumericMax = (plot.getRangeAxis().getUpperBound() > yRefVal)
+                        ? plot.getRangeAxis().getUpperBound()
+                        : yRefVal;
+                double delta = (testnumericMax - testnumericMin) * 0.0667;
+                plot.getRangeAxis().setRange(testnumericMin - delta, testnumericMax + delta);
+            }
 
             if (!pointTimeSeriesCollection.hasMultiplePoints()) {
                 // If this chart displays a single point, check if there should be a range
