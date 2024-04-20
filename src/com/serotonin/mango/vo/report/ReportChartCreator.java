@@ -56,6 +56,8 @@ import com.serotonin.mango.view.stats.StatisticsGenerator;
 import com.serotonin.mango.view.stats.ValueChangeCounter;
 import com.serotonin.mango.view.text.TextRenderer;
 import com.serotonin.mango.vo.UserComment;
+import com.serotonin.mango.vo.report.ReportChartCreator.PointStatistics;
+import com.serotonin.mango.vo.report.ReportChartCreator.StartsAndRuntimeWrapper;
 import com.serotonin.mango.web.email.MessageFormatDirective;
 import com.serotonin.mango.web.email.UsedImagesDirective;
 import com.serotonin.util.ColorUtils;
@@ -71,7 +73,8 @@ public class ReportChartCreator {
 
     private static final String IMAGE_SERVLET = "reportImageChart/";
     /**
-     * This image width is specifically chosen such that the report will print on a single page width in landscape.
+     * This image width is specifically chosen such that the report will print on a
+     * single page width in landscape.
      */
     private static final int IMAGE_WIDTH = 930;
     private static final int IMAGE_HEIGHT = 400;
@@ -97,13 +100,15 @@ public class ReportChartCreator {
     }
 
     /**
-     * Uses the given parameters to create the data for the fields of this class. Once the content has been created the
+     * Uses the given parameters to create the data for the fields of this class.
+     * Once the content has been created the
      * getters for the fields can be used to retrieve.
      * 
      * @param reportInstance
      * @param reportDao
      * @param inlinePrefix
-     *            if this is non-null, it implies that the content should be inline.
+     *                         if this is non-null, it implies that the content
+     *                         should be inline.
      * @param createExportFile
      */
     public void createContent(ReportInstance reportInstance, ReportDao reportDao, String inlinePrefix,
@@ -139,6 +144,7 @@ public class ReportChartCreator {
         for (PointStatistics pointStat : pointStatistics) {
             PointTimeSeriesCollection ptsc = new PointTimeSeriesCollection();
 
+            // Incorporated new data into charts
             if (pointStat.getNumericTimeSeries() != null)
                 ptsc.addNumericTimeSeries(pointStat.getNumericTimeSeries(), pointStat.getNumericTimeSeriesColor());
             else if (pointStat.getDiscreteTimeSeries() != null)
@@ -147,7 +153,9 @@ public class ReportChartCreator {
             if (ptsc.hasData()) {
                 if (inlinePrefix != null)
                     model.put("chartName", inlinePrefix + pointStat.getChartName());
-                pointStat.setImageData(ImageChartUtils.getChartData(ptsc, POINT_IMAGE_WIDTH, POINT_IMAGE_HEIGHT));
+                pointStat.setImageData(ImageChartUtils.getChartData(ptsc, POINT_IMAGE_WIDTH, POINT_IMAGE_HEIGHT,
+                        pointStat.getPlotType(), pointStat.getTitle(), pointStat.getXAxisLabel(),
+                        pointStat.getYAxisLabel(), pointStat.getUseYReference(), pointStat.getYReference()));
             }
         }
 
@@ -169,15 +177,15 @@ public class ReportChartCreator {
             events = reportDao.getReportInstanceEvents(reportInstance.getId());
             model.put("includeEvents", true);
             model.put("events", events);
-        }
-        else
+        } else
             model.put("includeEvents", false);
 
         List<ReportUserComment> comments = null;
         if (reportInstance.isIncludeUserComments()) {
             comments = reportDao.getReportInstanceUserComments(reportInstance.getId());
 
-            // Only provide the list of point comments to the report. The event comments have already be correlated
+            // Only provide the list of point comments to the report. The event comments
+            // have already be correlated
             // into the events list.
             List<ReportUserComment> pointComments = new ArrayList<ReportUserComment>();
             for (ReportUserComment c : comments) {
@@ -187,16 +195,14 @@ public class ReportChartCreator {
 
             model.put("includeUserComments", true);
             model.put("userComments", pointComments);
-        }
-        else
+        } else
             model.put("includeUserComments", false);
 
         // Create the template.
         Template template;
         try {
             template = Common.ctx.getFreemarkerConfig().getTemplate("report/reportChart.ftl");
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // Couldn't load the template?
             throw new ShouldNeverHappenException(e);
         }
@@ -205,8 +211,7 @@ public class ReportChartCreator {
         StringWriter writer = new StringWriter();
         try {
             template.process(model, writer);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // Couldn't process the template?
             throw new ShouldNeverHappenException(e);
         }
@@ -222,8 +227,7 @@ public class ReportChartCreator {
             try {
                 eventFile = File.createTempFile("tempEventCSV", ".csv");
                 new EventCsvStreamer(new PrintWriter(new FileWriter(eventFile)), events, bundle);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOG.error("Failed to create temp event file", e);
             }
         }
@@ -232,8 +236,7 @@ public class ReportChartCreator {
             try {
                 commentFile = File.createTempFile("tempCommentCSV", ".csv");
                 new UserCommentCsvStreamer(new PrintWriter(new FileWriter(commentFile)), comments, bundle);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOG.error("Failed to create temp comment file", e);
             }
         }
@@ -271,6 +274,9 @@ public class ReportChartCreator {
         return pointStatistics;
     }
 
+    // Modified PointStatistics class to allow for newly incorporated data
+    // (plotType, labels, etc.)
+    // Added mutators and accessors
     public class PointStatistics {
         private final int reportPointId;
         private String name;
@@ -283,6 +289,12 @@ public class ReportChartCreator {
         private Color numericTimeSeriesColor;
         private DiscreteTimeSeries discreteTimeSeries;
         private byte[] imageData;
+        private int plotType;
+        private String title;
+        private String xAxisLabel;
+        private String yAxisLabel;
+        private boolean useYRef;
+        private double yReferenceVal;
 
         public PointStatistics(int reportPointId) {
             this.reportPointId = reportPointId;
@@ -366,6 +378,54 @@ public class ReportChartCreator {
 
         public void setImageData(byte[] imageData) {
             this.imageData = imageData;
+        }
+
+        public int getPlotType() {
+            return this.plotType;
+        }
+
+        public void setPlotType(int plotType) {
+            this.plotType = plotType;
+        }
+
+        public String getTitle() {
+            return this.title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getXAxisLabel() {
+            return this.xAxisLabel;
+        }
+
+        public void setXAxisLabel(String xAxis) {
+            this.xAxisLabel = xAxis;
+        }
+
+        public String getYAxisLabel() {
+            return this.yAxisLabel;
+        }
+
+        public void setYAxisLabel(String yAxis) {
+            this.yAxisLabel = yAxis;
+        }
+
+        public double getYReference() {
+            return this.yReferenceVal;
+        }
+
+        public void setYReference(double yReference) {
+            this.yReferenceVal = yReference;
+        }
+
+        public boolean getUseYReference() {
+            return useYRef;
+        }
+
+        public void setUseYReference(boolean useYReference) {
+            this.useYRef = useYReference;
         }
 
         public String getAnalogMinimum() {
@@ -475,8 +535,7 @@ public class ReportChartCreator {
                     // Added a paramter, true, to ReportCsvStreamer, flagging default 'csv' generation
                     reportCsvStreamer = new ReportCsvStreamer(new PrintWriter(new FileWriter(exportFile)), bundle, true);
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOG.error("Failed to create temp file", e);
             }
         }
@@ -507,14 +566,15 @@ public class ReportChartCreator {
             try {
                 if (pointInfo.getColour() != null)
                     colour = ColorUtils.toColor("#" + pointInfo.getColour());
-            }
-            catch (InvalidArgumentException e) {
+            } catch (InvalidArgumentException e) {
                 // Should never happen, but leave the color null in case it does.
             }
 
             if (pointInfo.getDataType() == DataTypes.NUMERIC) {
-                point.setStats(new AnalogStatistics(pointInfo.getStartValue() == null ? null : pointInfo
-                        .getStartValue().getDoubleValue(), start, end));
+                point.setStats(new AnalogStatistics(pointInfo.getStartValue() == null ? null
+                        : pointInfo
+                                .getStartValue().getDoubleValue(),
+                        start, end));
                 quantizer = new NumericDataQuantizer(start, end, imageWidth, this);
 
                 discreteTimeSeries = null;
@@ -524,8 +584,7 @@ public class ReportChartCreator {
                 point.setNumericTimeSeriesColor(colour);
                 if (pointInfo.isConsolidatedChart())
                     pointTimeSeriesCollection.addNumericTimeSeries(numericTimeSeries, colour);
-            }
-            else if (pointInfo.getDataType() == DataTypes.MULTISTATE) {
+            } else if (pointInfo.getDataType() == DataTypes.MULTISTATE) {
                 point.setStats(new StartsAndRuntimeList(pointInfo.getStartValue(), start, end));
                 quantizer = new MultistateDataQuantizer(start, end, imageWidth, this);
 
@@ -535,8 +594,7 @@ public class ReportChartCreator {
                 if (pointInfo.isConsolidatedChart())
                     pointTimeSeriesCollection.addDiscreteTimeSeries(discreteTimeSeries);
                 numericTimeSeries = null;
-            }
-            else if (pointInfo.getDataType() == DataTypes.BINARY) {
+            } else if (pointInfo.getDataType() == DataTypes.BINARY) {
                 point.setStats(new StartsAndRuntimeList(pointInfo.getStartValue(), start, end));
                 quantizer = new BinaryDataQuantizer(start, end, imageWidth, this);
 
@@ -546,15 +604,13 @@ public class ReportChartCreator {
                 if (pointInfo.isConsolidatedChart())
                     pointTimeSeriesCollection.addDiscreteTimeSeries(discreteTimeSeries);
                 numericTimeSeries = null;
-            }
-            else if (pointInfo.getDataType() == DataTypes.ALPHANUMERIC) {
+            } else if (pointInfo.getDataType() == DataTypes.ALPHANUMERIC) {
                 point.setStats(new ValueChangeCounter(pointInfo.getStartValue()));
                 quantizer = null;
 
                 discreteTimeSeries = null;
                 numericTimeSeries = null;
-            }
-            else if (pointInfo.getDataType() == DataTypes.IMAGE) {
+            } else if (pointInfo.getDataType() == DataTypes.IMAGE) {
                 point.setStats(new ValueChangeCounter(pointInfo.getStartValue()));
                 quantizer = null;
 
@@ -564,6 +620,14 @@ public class ReportChartCreator {
 
             if (reportCsvStreamer != null)
                 reportCsvStreamer.startPoint(pointInfo);
+
+            // Incorporated new data into pointInfo
+            point.setTitle(pointInfo.getTitle());
+            point.setXAxisLabel(pointInfo.getXAxisLabel());
+            point.setYAxisLabel(pointInfo.getYAxisLabel());
+            point.setUseYReference(pointInfo.getUseYReference());
+            point.setYReference(pointInfo.getYReference());
+            point.setPlotType(pointInfo.getPlotType());
         }
 
         public void pointData(ReportDataValue rdv) {

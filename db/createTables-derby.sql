@@ -396,7 +396,13 @@ create table reportInstancePoints (
   startValue varchar(4096),
   textRenderer blob,
   colour varchar(6),
-  consolidatedChart char(1)
+  consolidatedChart char(1),
+  plotType int,
+  title varchar(50),
+  xAxisLabel varchar(50),
+  yAxisLabel varchar(50),
+  useYRef char(1),
+  yRefVal double
 );
 alter table reportInstancePoints add constraint reportInstancePointsPk primary key (id);
 alter table reportInstancePoints add constraint reportInstancePointsFk1 foreign key (reportInstanceId) 

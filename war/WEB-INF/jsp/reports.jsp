@@ -70,12 +70,15 @@
         if (!selectedReport)
             show($("reportDetails"));
         selectedReport = report;
-        
+
+        // Added new data to report points array data.
         $set("name", report.name);
         reportPointsArray = new Array();
         for (var i=0; i<report.points.length; i++)
             addToReportPointsArray(report.points[i].pointId, report.points[i].colour,
-                    report.points[i].consolidatedChart);
+                    report.points[i].consolidatedChart, report.points[i].plotType ?? 0, report.points[i].title ?? "",
+                    report.points[i].xAxisLabel ?? "", report.points[i].yAxisLabel ?? "", report.points[i].yReference ?? 0,
+                    report.points[i].useYReference ?? false);
         $set("includeEvents", report.includeEvents);
         $set("includeUserComments", report.includeUserComments);
         $set("dateRangeType", report.dateRangeType);
@@ -120,20 +123,28 @@
     
     function addPointToReport() {
         var pointId = $get("allPointsList");
-        addToReportPointsArray(pointId, "", true);
+        // Updated default values
+        addToReportPointsArray(pointId, "", true, 0, "", "", "", 0, false);
         writeReportPointsArray();
     }
     
-    function addToReportPointsArray(pointId, colour, consolidatedChart) {
+    function addToReportPointsArray(pointId, colour, consolidatedChart, plotType, title, xAxisLabel, yAxisLabel, yReference, useYReference) {
         var data = getPointData(pointId);
         if (data) {
             // Missing names imply that the point was deleted, so ignore.
+            // Added new data to reportPointsArray - labels, yRef, etc.
             reportPointsArray[reportPointsArray.length] = {
                 pointId: pointId,
                 pointName : data.name,
                 pointType : data.dataTypeMessage,
                 colour : !colour ? (!data.chartColour ? "" : data.chartColour) : colour,
-                consolidatedChart : consolidatedChart
+                consolidatedChart : consolidatedChart,
+                plotType : plotType,
+                title : !title ? (!data.title ? "" : data.title) : title,
+                xAxisLabel : !xAxisLabel ? (!data.xAxisLabel ? "" : data.xAxisLabel) : xAxisLabel,
+                yAxisLabel : !yAxisLabel ? (!data.yAxisLabel ? "" : data.yAxisLabel) : yAxisLabel,
+                yReference : yReference,
+                useYReference : useYReference
             };
         }
     }
@@ -157,8 +168,9 @@
             show($("reportPointsTableHeaders"));
             dwr.util.addRows("reportPointsTable", reportPointsArray,
                 [
-                    function(data) { return data.pointName; },
-                    function(data) { return data.pointType; },
+                // Added new columns to Report Generation per Point Item
+                    (data) => data.pointName,
+                    (data) => data.pointType,
                     function(data) {
                     	    return "<input type='text' value='"+ data.colour +"' "+
                     	            "onblur='updatePointColour("+ data.pointId +", this.value)'/>";
@@ -166,6 +178,31 @@
                     function(data) {
                         return "<input type='checkbox'"+ (data.consolidatedChart ? " checked='checked'" : "") +
                                 " onclick='updatePointConsolidatedChart("+ data.pointId +", this.checked)'/>";
+                    },
+                    function({ pointId }) {
+                        return "<div>" +
+                          "<input name='plotType" + pointId + "' type='radio' id='updatePointLine" + pointId +"' value='0' onclick='updatePointPlotType(" + pointId + ", 0)' checked/>" +
+                          "<label for='updatePointLine" + pointId + "'>Line</label>" +
+                          "<input name='plotType" + pointId + "' type='radio' id='updatePointScatter" + pointId + "' value='1' onclick='updatePointPlotType(" + pointId + ", 1)'/>" +
+                          "<label for='updatePointScatter" + pointId + "'>Scatter</label>" +
+                        "</div>"
+                    },
+                    function(data) {
+                        return "<input type='text' value='"+ data.title +"' "+
+                    	            "onblur='updatePointTitle("+ data.pointId +", this.value)' maxlength='32'/>";
+                    },
+                    function(data) {
+                        return "<input type='text' value='"+ data.xAxisLabel +"' "+
+                    	            "onblur='updatePointXAxisLabel("+ data.pointId +", this.value)' maxlength='32'/>";
+                    },
+                    function(data) {
+                        return "<input type='text' value='"+ data.yAxisLabel +"' "+
+                    	            "onblur='updatePointYAxisLabel("+ data.pointId +", this.value)' maxlength='32'/>";
+                    },
+                    function(data) {
+                        const yRefVal = (data.useYReference) ? data.yReference : '';
+                        return "<input type='number' value='"+ yRefVal +"' "+
+                    	            "onblur='updatePointYReference("+ data.pointId +", this.value)'/>";
                     },
                     function(data) { 
                             return "<img src='images/bullet_delete.png' class='ptr' "+
@@ -199,6 +236,65 @@
         var item = getElement(reportPointsArray, pointId, "pointId");
         if (item)
             item["consolidatedChart"] = consolidatedChart;
+    }
+
+    function updatePointPlotType(pointId, plotType) {
+      var item = getElement(reportPointsArray, pointId, "pointId");
+      if (item)
+          item["plotType"] = plotType;
+    }
+
+    // Added functionality to update each component of the reportInstancePoints data once item is un-selected.
+    function updatePointTitle(pointId, title) {
+        var item = getElement(reportPointsArray, pointId, "pointId");
+        if (item) {
+          if (title.length <= 32) {
+            item["title"] = title;
+            showMessage("titleError");
+          } else {
+            showMessage("titleError", "<fmt:message key="reports.validate.title"/>");
+          }
+        }
+            
+    }
+
+    function updatePointXAxisLabel(pointId, xAxisLabel) {
+        var item = getElement(reportPointsArray, pointId, "pointId");
+        if (item) {
+          if (xAxisLabel.length <= 32) {
+            item["xAxisLabel"] = xAxisLabel;
+            showMessage("xAxisError");
+          } else {
+            showMessage("xAxisError", "<fmt:message key="reports.validate.xAxisLabel"/>");
+          }
+        }
+    }
+
+    function updatePointYAxisLabel(pointId, yAxisLabel) {
+        var item = getElement(reportPointsArray, pointId, "pointId");
+        if (item) {
+          if (yAxisLabel.length <= 32) {
+            item["yAxisLabel"] = yAxisLabel;
+            showMessage("yAxisError");
+          } else {
+            showMessage("yAxisError", "<fmt:message key="reports.validate.yAxisLabel"/>");
+          }
+        }
+    }
+
+    function updatePointYReference(pointId, yReference) {
+        var item = getElement(reportPointsArray, pointId, "pointId");
+        if (item) {
+          if ((yReference.length > 0) && (parseFloat(yReference) == yReference)) {
+            item["yReference"] = yReference;
+            item["useYReference"] = true;
+            showMessage("yAxisError");
+          } else {
+            item["yReference"] = 0;
+            item["useYReference"] = false;
+            showMessage("yAxisError", "<fmt:message key="reports.validate.yReference"/>");
+          }
+        }
     }
     
     function updatePointsList() {
@@ -393,11 +489,21 @@
         display("emailRecipBody", email);
     }
     
+    // Added new data to serialization data
     function getReportPointIdsArray() {
         var points = new Array();
         for (var i=0; i<reportPointsArray.length; i++)
-            points[points.length] = { pointId: reportPointsArray[i].pointId, colour: reportPointsArray[i].colour,
-        		    consolidatedChart: reportPointsArray[i].consolidatedChart };
+            points[points.length] = { 
+              pointId: reportPointsArray[i].pointId, 
+              colour: reportPointsArray[i].colour,
+        		  consolidatedChart: reportPointsArray[i].consolidatedChart,
+              plotType: reportPointsArray[i].plotType, 
+              title: reportPointsArray[i].title, 
+              useYReference: reportPointsArray[i].useYReference,
+              xaxisLabel: reportPointsArray[i].xAxisLabel,  
+              yreference: +reportPointsArray[i].yReference,
+              yaxisLabel: reportPointsArray[i].yAxisLabel
+            };
         return points;
     }
     
@@ -449,6 +555,10 @@
         showMessage("runDelayMinutesError");
         showMessage("scheduleCronError");
         showMessage("recipientsError");
+        showMessage("titleError");
+        showMessage("xAxisError");
+        showMessage("yAxisError");
+        showMessage("yRefError");
     }
     
     function showMessages(messages) {
@@ -592,12 +702,21 @@
                       <td><fmt:message key="reports.dataType"/></td>
                       <td><fmt:message key="reports.colour"/></td>
                       <td><fmt:message key="reports.consolidatedChart"/></td>
+                      <td><fmt:message key="reports.plotType"/></td>
+                      <td><fmt:message key="reports.title"/></td>
+                      <td><fmt:message key="reports.xaxis"/></td>
+                      <td><fmt:message key="reports.yaxis"/></td>
+                      <td><fmt:message key="reports.yref"/></td>
                       <td></td>
                     </tr>
                   </tbody>
                   <tbody id="reportPointsTable"></tbody>
                 </table>
                 <span id="pointsError" class="formError"></span>
+                <span id="titleError" class="formError"></span>
+                <span id="xAxisError" class="formError"></span>
+                <span id="yAxisError" class="formError"></span>
+                <span id="yRefError" class="formError"></span>
               </td>
             </tr>
             

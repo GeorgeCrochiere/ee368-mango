@@ -24,6 +24,8 @@ import com.serotonin.mango.view.text.TextRenderer;
 /**
  * @author Matthew Lohbihler
  */
+
+// Updated ReportPointInfo class to include new components.
 public class ReportPointInfo {
     private int reportPointId;
     private String deviceName;
@@ -33,6 +35,12 @@ public class ReportPointInfo {
     private TextRenderer textRenderer;
     private String colour;
     private boolean consolidatedChart;
+    private int plotType;
+    private String title;
+    private String xAxisLabel;
+    private String yAxisLabel;
+    private boolean useYRef;
+    private double yReferenceVal;
 
     public String getExtendedName() {
         return deviceName + " - " + pointName;
@@ -100,5 +108,53 @@ public class ReportPointInfo {
 
     public void setConsolidatedChart(boolean consolidatedChart) {
         this.consolidatedChart = consolidatedChart;
+    }
+
+    public int getPlotType() {
+        return this.plotType;
+    }
+
+    public void setPlotType(int plotType) {
+        this.plotType = plotType;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getXAxisLabel() {
+        return this.xAxisLabel;
+    }
+
+    public void setXAxisLabel(String xAxis) {
+        this.xAxisLabel = xAxis;
+    }
+
+    public String getYAxisLabel() {
+        return this.yAxisLabel;
+    }
+
+    public void setYAxisLabel(String yAxis) {
+        this.yAxisLabel = yAxis;
+    }
+
+    public double getYReference() {
+        return this.yReferenceVal;
+    }
+
+    public void setYReference(double yReference) {
+        this.yReferenceVal = yReference;
+    }
+
+    public boolean getUseYReference() {
+        return useYRef;
+    }
+
+    public void setUseYReference(boolean useYReference) {
+        this.useYRef = useYReference;
     }
 }

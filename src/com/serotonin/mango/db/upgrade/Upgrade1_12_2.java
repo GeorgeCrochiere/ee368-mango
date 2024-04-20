@@ -28,6 +28,7 @@ public class Upgrade1_12_2 extends DBUpgrade {
     public void upgrade() throws Exception {
         OutputStream out = createUpdateLogOutputStream("1_12_2");
 
+        runScript(script, out);
         out.flush();
         out.close();
     }
@@ -36,4 +37,14 @@ public class Upgrade1_12_2 extends DBUpgrade {
     protected String getNewSchemaVersion() {
         return "1.12.3";
     }
+
+    // Added additional attempt to upgrade database
+    private static String[] script = { // plotType, title, xAxisLabel, yAxisLabel, useYRef, yRefVal
+            "alter table reportInstancePoints add column plotType integer;", //
+            "alter table reportInstancePoints add column title varchar(50);", //
+            "alter table reportInstancePoints add column xAxisLabel varchar(50);", //
+            "alter table reportInstancePoints add column yAxisLabel varchar(50);", //
+            "alter table reportInstancePoints add column useYRef char(1);", //
+            "alter table reportInstancePoints add column yRefVal double;", //
+    };
 }
