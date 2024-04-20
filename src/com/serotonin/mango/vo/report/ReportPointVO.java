@@ -10,6 +10,7 @@ import com.google.common.graph.ElementOrder;
 import com.serotonin.json.JsonObject;
 import com.serotonin.util.SerializationHelper;
 
+// Updated class ReportPointVO to incorporate new data
 public class ReportPointVO implements Serializable {
     private int pointId;
     private String colour;
@@ -100,6 +101,7 @@ public class ReportPointVO implements Serializable {
     private static final long serialVersionUID = -1;
     private static final int version = 2;
 
+    // Included new data in serialization - write
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(version);
 
@@ -114,6 +116,7 @@ public class ReportPointVO implements Serializable {
         SerializationHelper.writeSafeUTF(out, yaxisLabel);
     }
 
+    // Included new data in serialization - Read
     private void readObject(ObjectInputStream in) throws IOException {
         int ver = in.readInt();
 

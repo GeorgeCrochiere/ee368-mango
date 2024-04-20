@@ -144,6 +144,7 @@ public class ReportChartCreator {
         for (PointStatistics pointStat : pointStatistics) {
             PointTimeSeriesCollection ptsc = new PointTimeSeriesCollection();
 
+            // Incorporated new data into charts
             if (pointStat.getNumericTimeSeries() != null)
                 ptsc.addNumericTimeSeries(pointStat.getNumericTimeSeries(), pointStat.getNumericTimeSeriesColor());
             else if (pointStat.getDiscreteTimeSeries() != null)
@@ -273,6 +274,9 @@ public class ReportChartCreator {
         return pointStatistics;
     }
 
+    // Modified PointStatistics class to allow for newly incorporated data
+    // (plotType, labels, etc.)
+    // Added mutators and accessors
     public class PointStatistics {
         private final int reportPointId;
         private String name;
@@ -616,6 +620,7 @@ public class ReportChartCreator {
             if (reportCsvStreamer != null)
                 reportCsvStreamer.startPoint(pointInfo);
 
+            // Incorporated new data into pointInfo
             point.setTitle(pointInfo.getTitle());
             point.setXAxisLabel(pointInfo.getXAxisLabel());
             point.setYAxisLabel(pointInfo.getYAxisLabel());

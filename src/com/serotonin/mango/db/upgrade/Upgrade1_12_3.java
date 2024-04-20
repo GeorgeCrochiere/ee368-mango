@@ -14,6 +14,7 @@ public class Upgrade1_12_3 extends DBUpgrade {
         out.close();
     }
 
+    // Added additional attempt to upgrade db
     @Override
     protected String getNewSchemaVersion() {
         return "1.12.4";

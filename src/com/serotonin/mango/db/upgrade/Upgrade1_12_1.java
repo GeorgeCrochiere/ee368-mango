@@ -39,6 +39,7 @@ public class Upgrade1_12_1 extends DBUpgrade {
         return "1.12.2";
     }
 
+    // Added attempt to upgrade database
     private static String[] script = { //
             "alter table reportInstancePoints add column consolidatedChart char(1);", //
             "update reportInstancePoints set consolidatedChart='Y';", //

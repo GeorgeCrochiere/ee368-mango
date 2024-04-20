@@ -124,6 +124,7 @@ public class ReportWorkItem implements WorkItem {
                     // as null.
                 }
 
+                // Added additional features to the execution of the work item
                 // Title
                 String title = null;
                 if (!StringUtils.isEmpty(reportPoint.getTitle()))

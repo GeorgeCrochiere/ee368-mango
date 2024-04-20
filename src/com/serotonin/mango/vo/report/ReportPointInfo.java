@@ -24,6 +24,8 @@ import com.serotonin.mango.view.text.TextRenderer;
 /**
  * @author Matthew Lohbihler
  */
+
+// Updated ReportPointInfo class to include new components.
 public class ReportPointInfo {
     private int reportPointId;
     private String deviceName;

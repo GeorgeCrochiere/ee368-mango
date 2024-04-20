@@ -101,6 +101,8 @@ public class ImageChartUtils {
         }
     }
 
+    // Updated report imaging to incorporate new details into output images (yRef,
+    // labeling, etc.)
     public static void writeChart(PointTimeSeriesCollection pointTimeSeriesCollection, boolean showLegend,
             OutputStream out, int width, int height, int plotType, String title, String xAxisLabel, String yAxisLabel,
             boolean useYRef, double yRefVal) throws IOException {
@@ -150,7 +152,7 @@ public class ImageChartUtils {
             numericMin = plot.getRangeAxis().getLowerBound();
             numericMax = plot.getRangeAxis().getUpperBound();
 
-            // Add y-reference line - currently erroring
+            // Added y-reference line - currently erroring
             if (useYRef) {
                 ValueMarker marker = new ValueMarker(yRefVal);
                 marker.setPaint(Color.BLUE);

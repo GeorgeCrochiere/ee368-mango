@@ -70,7 +70,8 @@
         if (!selectedReport)
             show($("reportDetails"));
         selectedReport = report;
-        
+
+        // Added new data to report points array data.
         $set("name", report.name);
         reportPointsArray = new Array();
         for (var i=0; i<report.points.length; i++)
@@ -122,6 +123,7 @@
     
     function addPointToReport() {
         var pointId = $get("allPointsList");
+        // Updated default values
         addToReportPointsArray(pointId, "", true, 0, "", "", "", 0, false);
         writeReportPointsArray();
     }
@@ -130,6 +132,7 @@
         var data = getPointData(pointId);
         if (data) {
             // Missing names imply that the point was deleted, so ignore.
+            // Added new data to reportPointsArray - labels, yRef, etc.
             reportPointsArray[reportPointsArray.length] = {
                 pointId: pointId,
                 pointName : data.name,
@@ -165,6 +168,7 @@
             show($("reportPointsTableHeaders"));
             dwr.util.addRows("reportPointsTable", reportPointsArray,
                 [
+                // Added new columns to Report Generation per Point Item
                     (data) => data.pointName,
                     (data) => data.pointType,
                     function(data) {
@@ -240,6 +244,7 @@
           item["plotType"] = plotType;
     }
 
+    // Added functionality to update each component of the reportInstancePoints data once item is un-selected.
     function updatePointTitle(pointId, title) {
         var item = getElement(reportPointsArray, pointId, "pointId");
         if (item) {
@@ -484,6 +489,7 @@
         display("emailRecipBody", email);
     }
     
+    // Added new data to serialization data
     function getReportPointIdsArray() {
         var points = new Array();
         for (var i=0; i<reportPointsArray.length; i++)

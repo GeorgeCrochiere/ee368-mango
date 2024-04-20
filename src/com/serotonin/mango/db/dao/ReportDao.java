@@ -195,6 +195,7 @@ public class ReportDao extends BaseDao {
     /**
      * This method should only be called by the ReportWorkItem.
      */
+    // Updated query to include additional fields into reportInstancePoints
     private static final String REPORT_INSTANCE_POINTS_INSERT = "insert into reportInstancePoints " //
             + "(reportInstanceId, dataSourceName, pointName, dataType, startValue, textRenderer, colour, consolidatedChart, plotType, title, xAxisLabel, yAxisLabel, useYRef, yRefVal) "
             + "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -210,6 +211,9 @@ public class ReportDao extends BaseDao {
         private final boolean useYRef;
         private final double yRef;
 
+        // Updated PointInfo class to include plotType, title, xAxisLabel, yAxisLabel,
+        // useYRef, and yRef.
+        // Added getter/setter functions for new class items
         public PointInfo(DataPointVO point, String colour, boolean consolidatedChart, int plotType, String title,
                 String xAxisLabel, String yAxisLabel, boolean useYRef, double yRef) {
             this.point = point;
@@ -306,6 +310,8 @@ public class ReportDao extends BaseDao {
             // Insert the reportInstancePoints record
             String name = Functions.truncate(point.getName(), 100);
 
+            // Updated query to include additional fields needed, along with associated
+            // data.
             int reportPointId = doInsert(
                     REPORT_INSTANCE_POINTS_INSERT,
                     new Object[] { instance.getId(), point.getDeviceName(), name, dataType,
@@ -456,6 +462,7 @@ public class ReportDao extends BaseDao {
      * method grouped by point (points are not
      * ordered), and sorted by time ascending.
      */
+    // Updated search query
     private static final String REPORT_INSTANCE_POINT_SELECT = "select id, dataSourceName, pointName, dataType, " //
             + "startValue, textRenderer, colour, consolidatedChart, plotType, title, xAxisLabel, yAxisLabel, useYRef, yRefVal from reportInstancePoints ";
     private static final String REPORT_INSTANCE_DATA_SELECT = "select rd.pointValue, rda.textPointValueShort, " //
@@ -466,6 +473,7 @@ public class ReportDao extends BaseDao {
 
     public void reportInstanceData(int instanceId, final ReportDataStreamHandler handler) {
         // Retrieve point information.
+        // added new data into query point information
         List<ReportPointInfo> pointInfos = query(REPORT_INSTANCE_POINT_SELECT + "where reportInstanceId=?",
                 new Object[] { instanceId }, new GenericRowMapper<ReportPointInfo>() {
                     public ReportPointInfo mapRow(ResultSet rs, int rowNum) throws SQLException {

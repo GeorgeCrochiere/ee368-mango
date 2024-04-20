@@ -38,6 +38,7 @@ public class Upgrade1_12_2 extends DBUpgrade {
         return "1.12.3";
     }
 
+    // Added additional attempt to upgrade database
     private static String[] script = { // plotType, title, xAxisLabel, yAxisLabel, useYRef, yRefVal
             "alter table reportInstancePoints add column plotType integer;", //
             "alter table reportInstancePoints add column title varchar(50);", //
