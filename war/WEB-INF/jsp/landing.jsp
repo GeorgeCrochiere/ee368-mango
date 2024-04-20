@@ -42,7 +42,7 @@
                 <p>Mango is an application designed to enhance your experience with smart home sensors. Our technology allows you to monitor your environment with precision and convenience. The software can provide detailed reports and visual diagnostic data.</p>
                 <h2 class="smallTitle">Sensors Utilized</h2>
                 <p>Mango harnesses the power of sensors to provide you with real-time data about your surroundings. From temperature and humidity to air quality and beyond, Mango keeps you informed and in control.</p>
-                <p><a href="/watch_list.shtm">Link to watchlist</a></p>
+                <p><a href="./watch_list.shtm">Link to watchlist</a></p>
             </div>
             <div dojoType="ContentPane" sizeMin="50" sizeShare="50" style="overflow:auto; padding:2px 10px 2px 2px;">
                 <div class="smallTitle"><fmt:message key="common.help"/></div>
