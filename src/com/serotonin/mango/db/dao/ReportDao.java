@@ -438,17 +438,15 @@ public class ReportDao extends BaseDao {
                     }
                 });
 
-        
         for (final ReportPointInfo point : pointInfos) {
             handler.startPoint(point);
-            
             final int dataType = point.getDataType();
             ejt.query(REPORT_INSTANCE_DATA_SELECT + "where rd.reportInstancePointId=? order by rd.ts",
                     new Object[] { point.getReportPointId() }, new RowCallbackHandler() {
                         public void processRow(ResultSet rs) throws SQLException {
-                            // Moved the intialization of rdv to inside the overriden processRow
+                            // Instantiate new report date value to populate
                             ReportDataValue rdv = new ReportDataValue();
-                            // Moved rdv.setReportPointID to inside the overriden processRow
+                            // Set the rdv's current point id
                             rdv.setReportPointId(point.getReportPointId());
                             
                             switch (dataType) {
