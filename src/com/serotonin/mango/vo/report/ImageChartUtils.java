@@ -114,7 +114,8 @@ public class ImageChartUtils {
 
         // Create chart type
         JFreeChart chart;
-        chart = ChartFactory.createTimeSeriesChart(titleVal, xAxisVal, yAxisVal, null, true, false, false);
+        chart = ChartFactory.createTimeSeriesChart(titleVal, xAxisVal, yAxisVal, null, showLegend || useYRef, false,
+                false);
         chart.setBackgroundPaint(SystemSettingsDao.getColour(SystemSettingsDao.CHART_BACKGROUND_COLOUR));
 
         XYPlot plot = chart.getXYPlot();
