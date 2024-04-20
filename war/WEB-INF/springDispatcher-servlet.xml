@@ -132,7 +132,7 @@
     <property name="viewName"><value>help</value></property>
   </bean>
 
-  <bean id="landingController" class="com.serotonin.mango.web.mvc.controller.LandingController">
+  <bean id="landingController" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
     <property name="viewName"><value>landing</value></property>
   </bean>
   
