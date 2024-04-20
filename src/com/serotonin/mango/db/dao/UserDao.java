@@ -133,7 +133,8 @@ public class UserDao extends BaseDao {
                 USER_INSERT,
                 new Object[] { user.getUsername(), user.getPassword(), user.getEmail(), user.getPhone(),
                         boolToChar(user.isAdmin()), boolToChar(user.isDisabled()), user.getHomeUrl(),
-                        user.getReceiveAlarmEmails(), boolToChar(user.isReceiveOwnAuditEvents()) }, new int[] {
+                        user.getReceiveAlarmEmails(), boolToChar(user.isReceiveOwnAuditEvents()) },
+                new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.INTEGER, Types.VARCHAR });
         user.setId(id);
@@ -148,7 +149,8 @@ public class UserDao extends BaseDao {
         ejt.update(
                 USER_UPDATE,
                 new Object[] { user.getUsername(), user.getPassword(), user.getEmail(), user.getPhone(),
-                        boolToChar(user.isAdmin()), boolToChar(user.isDisabled()), user.getHomeUrl(),
+                        boolToChar(user.isAdmin()), boolToChar(user.isDisabled()),
+                        (user.getHomeUrl() != null ? user.getHomeUrl() : ""),
                         user.getReceiveAlarmEmails(), boolToChar(user.isReceiveOwnAuditEvents()), user.getId() });
         saveRelationalData(user);
     }
