@@ -51,6 +51,7 @@
         <prop key="/event_handlers.shtm">eventHandlersController</prop>
         <prop key="/events.shtm">eventsController</prop>
         <prop key="/help.shtm">helpController</prop>
+        <prop key="/landing.shtm">landingController</prop>
         <prop key="/login.htm">loginController</prop>
         <prop key="/logout.htm">logoutController</prop>
         <prop key="/mailing_lists.shtm">mailingListsController</prop>
@@ -129,6 +130,10 @@
   
   <bean id="helpController" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
     <property name="viewName"><value>help</value></property>
+  </bean>
+
+  <bean id="landingController" class="com.serotonin.mango.web.mvc.controller.LandingController">
+    <property name="viewName"><value>landing</value></property>
   </bean>
   
   <bean id="loginController" class="com.serotonin.mango.web.mvc.controller.LoginController">
