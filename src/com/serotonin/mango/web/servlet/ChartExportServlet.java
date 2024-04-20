@@ -44,7 +44,7 @@ public class ChartExportServlet extends HttpServlet {
         response.setContentType("text/csv");
 
         final ResourceBundle bundle = Common.getBundle();
-        // Added a paramter, true, to ReportCsvStreamer for the capability of horizontal_csv
+        // Added a paramter, true, to ReportCsvStreamer, flagging default 'csv' generation
         final ReportCsvStreamer exportCreator = new ReportCsvStreamer(response.getWriter(), bundle, true);
 
         final ReportDataValue rdv = new ReportDataValue();
