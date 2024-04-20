@@ -532,7 +532,8 @@ public class ReportChartCreator {
             try {
                 if (createExportFile) {
                     exportFile = File.createTempFile("tempCSV", ".csv");
-                    reportCsvStreamer = new ReportCsvStreamer(new PrintWriter(new FileWriter(exportFile)), bundle);
+                    // Added a paramter, true, to ReportCsvStreamer, flagging default 'csv' generation
+                    reportCsvStreamer = new ReportCsvStreamer(new PrintWriter(new FileWriter(exportFile)), bundle, true);
                 }
             } catch (IOException e) {
                 LOG.error("Failed to create temp file", e);
