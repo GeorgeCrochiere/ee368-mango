@@ -27,7 +27,7 @@ Completion Date: April 10, 2024
 
 Files Affected: 
 
-UserDao.java
+- UserDao.java
 
 Feature Change:
 
@@ -43,15 +43,15 @@ Completion Date: April 20, 2024
 
 Files Affected:
 
-MiscDwr.java
+- MiscDwr.java
 
-messages_en.properties
+- messages_en.properties
 
-landing.jsp
+- landing.jsp
 
-springDispatcher-servlet.xml
+- springDispatcher-servlet.xml
 
-page.tag
+- page.tag
 
 Feature Changes
 
@@ -68,15 +68,11 @@ Completion Date: April 20th, 2024
 
 Files Affected 
 
-ReportExportBase.java
-
-ChartExportServlet.java
-
-ReportChartCreator.java
-
-ReportDao.java
-
-ReportCsvStreamer.java
+- ReportExportBase.java
+- ChartExportServlet.java
+- ReportChartCreator.java
+- ReportDao.java
+- ReportCsvStreamer.java
 
 Feature Change:
 
